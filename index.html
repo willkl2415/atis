@@ -6,27 +6,29 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      background: #f4f4f4;
       margin: 0;
       padding: 20px;
-    }
-    h1 {
-      color: #333;
     }
     .container {
       max-width: 800px;
       margin: auto;
-      background: white;
-      padding: 20px;
+      background: #fff;
+      padding: 25px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    textarea, input[type="text"] {
+    h1 {
+      color: #222;
+    }
+    textarea {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
       margin-top: 10px;
       margin-bottom: 20px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
     button {
       padding: 10px 20px;
@@ -38,11 +40,12 @@
       cursor: pointer;
     }
     .response {
-      margin-top: 20px;
-      background: #e0f7fa;
-      padding: 15px;
-      border-radius: 8px;
+      margin-top: 25px;
+      background: #e8f4fc;
+      padding: 20px;
+      border-radius: 10px;
       white-space: pre-line;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -51,53 +54,69 @@
     <h1>ATIS – Lesson Feedback Coach</h1>
     <p>Describe a recent lesson or training session. What did you say? What happened in the room?</p>
     <textarea id="lessonInput" rows="6" placeholder="E.g. I started with a recap quiz. I praised one student but got frustrated when others were chatting..."></textarea>
-    <button onclick="analyseLesson()">Get Feedback</button>
+    <button onclick="generateFeedback()">Get Feedback</button>
     <div class="response" id="feedbackResponse"></div>
   </div>
 
   <script>
-    function analyseLesson() {
-      const input = document.getElementById('lessonInput').value.toLowerCase();
-      let response = "Here's your coaching summary:\n\n";
+    function generateFeedback() {
+      const input = document.getElementById("lessonInput").value.trim().toLowerCase();
+      let feedback = "Here's your coaching summary:\n\n";
 
-      if (!input.trim()) {
-        document.getElementById('feedbackResponse').innerText = "Please describe your lesson before clicking.";
+      if (!input) {
+        document.getElementById("feedbackResponse").innerText = "Please describe your lesson before clicking.";
         return;
       }
 
-      // PRAISE
+      // PRAISE LOGIC
       if (input.includes("praise") || input.includes("well done") || input.includes("good job")) {
-        response += "✅ You gave praise — great! Try to keep it specific (e.g. 'I liked your reasoning about...').\n\n";
-      } else {
-        response += "🟡 I didn’t spot any praise. Even short phrases like 'nice effort' can go a long way. Want to try adding some next time?\n\n";
-      }
-
-      // BEHAVIOUR REDIRECTION
-      if (input.includes("chatting") || input.includes("disruption") || input.includes("off task") || input.includes("frustrated")) {
-        response += "🟠 You faced some behaviour challenges. When you're frustrated, try short resets: 'Let’s pause there' or 'Eyes on me'.\n\n";
-      }
-
-      // QUESTIONING
-      if (input.includes("question") || input.includes("asked") || input.includes("quiz")) {
-        if (input.includes("yes or no") || input.includes("closed")) {
-          response += "🟡 You used closed questions. Try mixing in open-ended ones to deepen thinking (e.g. 'Why do you think that?').\n\n";
+        if (input.includes("everyone") || input.includes("whole class")) {
+          feedback += "✅ You gave group praise. Nice work! For even more impact, try calling out a specific effort or improvement.\n\n";
         } else {
-          response += "✅ Good use of questioning. Open questions promote stronger discussion and insight.\n\n";
+          feedback += "✅ Praise detected. Was it linked to effort, process, or outcome? The more specific, the more motivating.\n\n";
         }
       } else {
-        response += "🟡 Try to include more student questions next time — even something simple like 'What do you notice?'\n\n";
+        feedback += "🟡 No praise was mentioned. Even a quick 'Nice reasoning' can boost engagement. Want to try adding one next time?\n\n";
       }
 
-      // TONE
-      if (input.includes("shouted") || input.includes("angry") || input.includes("frustrated")) {
-        response += "🔴 Your tone may have been sharp. You’re human — we all have those days. Let’s aim for calm resets next time.\n\n";
+      // QUESTIONING LOGIC
+      if (input.includes("asked") || input.includes("quiz") || input.includes("question")) {
+        if (input.includes("yes") || input.includes("no") || input.includes("closed")) {
+          feedback += "🟡 You may have used closed questions. These are great for checking facts — just remember to mix in 'why' or 'how' for deeper thinking.\n\n";
+        } else if (input.includes("why") || input.includes("how") || input.includes("explain")) {
+          feedback += "✅ Strong questioning approach! You're encouraging learners to think aloud and justify responses.\n\n";
+        } else {
+          feedback += "🟢 Good to see questioning present. Consider using names randomly or 'no hands up' to keep everyone alert.\n\n";
+        }
       } else {
-        response += "✅ Your tone seems steady. Keep building that calm, clear presence — it really helps students feel safe.\n\n";
+        feedback += "🟡 Try to include student questions next time — even a warm-up like 'What do you notice about...?' helps set the tone.\n\n";
       }
 
-      response += "Would you like a 2-minute strategy guide or a scenario simulation next?";
+      // BEHAVIOUR HANDLING LOGIC
+      if (input.includes("chatting") || input.includes("disruption") || input.includes("talking over") || input.includes("ignored")) {
+        if (input.includes("frustrated") || input.includes("lost my temper") || input.includes("snapped")) {
+          feedback += "🟠 You showed honesty around classroom control. That’s okay — next time, try a pause and eye contact before responding.\n\n";
+        } else {
+          feedback += "🟢 Behaviour managed under pressure — well done. Could you narrate positive behaviour more clearly next time?\n\n";
+        }
+      }
 
-      document.getElementById('feedbackResponse').innerText = response;
+      // TONE / EMOTION
+      if (input.includes("shouted") || input.includes("angry") || input.includes("irritated")) {
+        feedback += "🔴 Your tone may have slipped — it happens. A calm restart script like 'Let’s try that again together' can reset the atmosphere.\n\n";
+      } else if (input.includes("smiled") || input.includes("warm") || input.includes("encouraging")) {
+        feedback += "✅ You projected warmth — students remember how we made them feel more than what we said. Keep that up!\n\n";
+      } else {
+        feedback += "🟢 Tone seemed neutral or steady. Reflecting warmth through voice and body language makes a big difference.\n\n";
+      }
+
+      // MISSING DEPTH
+      if (!input.includes("activity") && !input.includes("starter") && !input.includes("main task") && !input.includes("plenary")) {
+        feedback += "🔍 Tip: Try adding a bit more about the lesson structure next time. What kind of task were students doing?\n\n";
+      }
+
+      feedback += "Would you like a 2-minute strategy or a scenario simulation next?";
+      document.getElementById("feedbackResponse").innerText = feedback;
     }
   </script>
 </body>
