@@ -2,132 +2,121 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ATIS – Context Matrix Engine</title>
+  <title>ATIS – Lesson Feedback Coach</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background-color: #f4f4f4;
       margin: 0;
       padding: 20px;
     }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
     h1 {
-      color: #222;
+      text-align: center;
     }
     label {
       font-weight: bold;
     }
-    select, textarea {
+    select, textarea, button {
       width: 100%;
+      margin-bottom: 15px;
       padding: 10px;
-      margin-top: 8px;
-      margin-bottom: 20px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
       font-size: 16px;
     }
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #007acc;
+      background-color: #2d6cdf;
       color: white;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
     }
-    .response {
-      margin-top: 25px;
-      background: #e8f4fc;
-      padding: 20px;
-      border-radius: 10px;
-      white-space: pre-line;
-      line-height: 1.6;
+    button:hover {
+      background-color: #1f4fbf;
+    }
+    .response-box {
+      background-color: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>ATIS – Lesson Feedback Coach</h1>
+  <h1>ATIS – Lesson Feedback Coach</h1>
 
-    <label for="sectorSelect">Select Industry Sector:</label>
-    <select id="sectorSelect">
-      <option value="education">Education</option>
-      <option value="training">Training</option>
-      <option value="healthcare">Healthcare</option>
-      <option value="manufacturing">Manufacturing</option>
-      <option value="defence">Defence</option>
-    </select>
+  <label for="sector">Select Industry Sector:</label>
+  <select id="sector">
+    <option>Education</option>
+    <option>Training</option>
+    <option>Healthcare</option>
+    <option>Retail</option>
+    <option>Manufacturing</option>
+    <option>Defence</option>
+  </select>
 
-    <label for="roleSelect">Select Role:</label>
-    <select id="roleSelect">
-      <option value="new_teacher">New Teacher</option>
-      <option value="trainer">Trainer</option>
-      <option value="ward_supervisor">Ward Supervisor</option>
-      <option value="shift_lead">Shift Lead</option>
-      <option value="platoon_leader">Platoon Leader</option>
-    </select>
+  <label for="role">Select Role:</label>
+  <select id="role">
+    <option>New Teacher</option>
+    <option>Trainer</option>
+    <option>Team Leader</option>
+    <option>Support Staff</option>
+  </select>
 
-    <p>Describe a recent session or situation in your role. What happened? What did you say or do?</p>
-    <textarea id="lessonInput" rows="6" placeholder="E.g. I praised one student and others were laughing and chattering..."></textarea>
-    <button onclick="generateFeedback()">Get Feedback</button>
+  <label for="situation">Describe a recent session or situation in your role. What happened? What did you say or do?</label>
+  <textarea id="situation" rows="5" placeholder="Type your classroom or training moment here..."></textarea>
 
-    <div class="response" id="feedbackResponse"></div>
-  </div>
+  <button onclick="generateFeedback()">Get Feedback</button>
+
+  <div id="response" class="response-box"></div>
 
   <script>
     function generateFeedback() {
-      const input = document.getElementById("lessonInput").value.trim().toLowerCase();
-      const sector = document.getElementById("sectorSelect").value;
-      const role = document.getElementById("roleSelect").value;
+      const sector = document.getElementById('sector').value;
+      const role = document.getElementById('role').value;
+      const situation = document.getElementById('situation').value.trim().toLowerCase();
+      const responseBox = document.getElementById('response');
 
-      let feedback = `🧭 Selected Sector: ${sector.charAt(0).toUpperCase() + sector.slice(1)}\n`;
-      feedback += `🧑‍💼 Selected Role: ${role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}\n\n`;
+      let feedback = `🏅 Selected Sector: ${sector}\n🧑‍🏫 Selected Role: ${role}\n\n`;
 
-      if (!input) {
-        document.getElementById("feedbackResponse").innerText = "Please describe your situation before clicking.";
+      // 🔍 Safeguarding Trigger Check
+      if (situation.includes("swore") || situation.includes("lost control") || situation.includes("shouted at")) {
+        feedback += "🔴 A serious classroom incident was reported involving loss of control. While emotional responses are human, swearing or losing composure in front of students breaks professional boundaries.\n\n";
+        feedback += "You’ve already taken the first step by recognising the issue. Reflect on what led to that moment and consider:\n- Speaking with your line manager or safeguarding lead\n- Using classroom management resets like silence, proximity, or structured pauses\n- Offering an apology to rebuild trust if appropriate\n\n";
+        feedback += "Taking responsibility and seeking help is a sign of strength. Would you like to simulate this again with a better outcome?";
+        responseBox.innerText = feedback;
         return;
       }
 
-      // Context matrix logic
-      const praise = input.includes("praise") || input.includes("praised");
-      const disruption = input.includes("chatting") || input.includes("laughing") || input.includes("disruption") || input.includes("ignored");
-      const frustration = input.includes("frustrated") || input.includes("irritated") || input.includes("snapped") || input.includes("angry") || input.includes("shouted");
-      const silence = input.includes("quiet") || input.includes("no one responded") || input.includes("blank stares");
-      const effort = input.includes("tried") || input.includes("attempted");
-
-      // Patterns
-      if (praise && disruption) {
-        feedback += "🟠 You praised a student but others responded with disruption. This can sometimes happen if peers feel excluded or the praise was too visible.\n";
-        feedback += "Consider using anonymous praise techniques like 'I saw great teamwork happening on this side of the room' or praising effort types instead of individuals.\n\n";
-      } 
-      else if (disruption && frustration) {
-        feedback += "🔴 Disruption triggered frustration. You're not alone — it's human to feel overwhelmed. Try using neutral resets like 'Let’s pause there' or use proximity and silence to regain calm.\n\n";
-      }
-      else if (silence && effort) {
-        feedback += "🟡 It sounds like you made an effort, but students didn’t respond. This could mean they were unsure. Try framing your question in parts, or model an answer first.\n\n";
-      }
-      else if (praise && !disruption) {
-        feedback += "✅ Good use of praise. Try anchoring it to learning behaviours like 'I liked how you explained your thinking'. This builds future learning, not just positive feelings.\n\n";
-      }
-      else if (frustration && !disruption) {
-        feedback += "🟠 You felt frustrated, even without clear classroom issues. This might signal emotional fatigue. Can ATIS offer a quick well-being check-in or support tool?\n\n";
-      }
-      else if (!praise && !disruption && !frustration) {
-        feedback += "🟢 Calm lesson tone detected. You didn’t mention praise or disruption — perhaps next time try weaving in feedback moments or quick checks for understanding.\n\n";
-      } 
-      else {
-        feedback += "🟡 I picked up part of the story. Would you like to expand it? ATIS can guide on praise, behaviour, questioning, or tone — depending on what happened next.\n\n";
+      // 🟠 Emotional Check
+      if (situation.includes("frustrated") || situation.includes("overwhelmed") || situation.includes("nobody responded")) {
+        feedback += "🟠 You reported feeling emotionally affected by the moment. This is common, especially in the early stages of your role.\n\n";
+        feedback += "You might try:\n- Asking simpler or more direct questions\n- Modelling an answer first to reduce pressure\n- Doing a short well-being check-in for yourself afterwards\n\n";
+        feedback += "Would you like to simulate a calmer moment or view tips on re-engagement?";
+        responseBox.innerText = feedback;
+        return;
       }
 
-      feedback += "Would you like to simulate a similar moment or see a real-world example?";
-      document.getElementById("feedbackResponse").innerText = feedback;
+      // 🟡 Mild Disruption
+      if (situation.includes("chatting") || situation.includes("talking") || situation.includes("ignored") || situation.includes("blank stares")) {
+        feedback += "🟡 Mild disruption or disengagement detected. This could be caused by unclear expectations, timing, or group energy.\n\n";
+        feedback += "Suggestions:\n- Use non-verbal resets like silence or eye contact\n- Ask 'turn and talk' style questions to restart dialogue\n- Praise group effort, not individuals, to maintain balance\n\n";
+        feedback += "Would you like to simulate a group praise moment or neutralise chatty energy?";
+        responseBox.innerText = feedback;
+        return;
+      }
+
+      // 🟢 Calm / Neutral
+      if (situation.includes("no issues") || situation.includes("everyone was focused") || situation.includes("clean run")) {
+        feedback += "🟢 Calm moment detected. A successful session like this is a chance to add extra depth or try stretch techniques.\n\n";
+        feedback += "Ideas:\n- Use success to try new questioning formats\n- Experiment with peer feedback or open-ended questions\n- Reflect on what made it go well — time of day, routine, setup?\n\n";
+        feedback += "Would you like to log this as a best practice scenario or simulate a challenge next time?";
+        responseBox.innerText = feedback;
+        return;
+      }
+
+      // Default Guidance
+      feedback += "🟡 Feedback: I couldn't match this to a known situation. Try:\n- Rewriting with clearer actions\n- Including emotional terms or specific phrases\n\n";
+      feedback += "Would you like to rephrase or simulate a known classroom challenge?";
+      responseBox.innerText = feedback;
     }
   </script>
 </body>
