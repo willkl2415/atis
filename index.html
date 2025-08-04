@@ -1,42 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>ATIS – Lesson Feedback Coach</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #f8f8f8;
       margin: 0;
       padding: 20px;
     }
+
     h1 {
       text-align: center;
+      font-size: 28px;
+      margin-bottom: 30px;
     }
+
     label {
       font-weight: bold;
+      display: block;
+      margin-top: 15px;
     }
-    select, textarea, button {
+
+    select, textarea {
       width: 100%;
-      margin-bottom: 15px;
       padding: 10px;
       font-size: 16px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
+
+    textarea {
+      height: 120px;
+    }
+
     button {
-      background-color: #2d6cdf;
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      font-size: 16px;
+      background-color: #3b61d1;
       color: white;
       border: none;
+      border-radius: 4px;
       cursor: pointer;
     }
+
     button:hover {
-      background-color: #1f4fbf;
+      background-color: #2c4bb7;
     }
-    .response-box {
-      background-color: #e3f2fd;
+
+    #response {
+      margin-top: 25px;
       padding: 15px;
-      border-radius: 8px;
-      margin-top: 20px;
-      white-space: pre-wrap;
+      background-color: #e6f0ff;
+      border-left: 6px solid #3b61d1;
+      border-radius: 4px;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -44,80 +67,94 @@
   <h1>ATIS – Lesson Feedback Coach</h1>
 
   <label for="sector">Select Industry Sector:</label>
-  <select id="sector">
-    <option>Education</option>
-    <option>Training</option>
-    <option>Healthcare</option>
-    <option>Retail</option>
-    <option>Manufacturing</option>
-    <option>Defence</option>
+  <select id="sector" onchange="updateRoles()">
+    <option value="Education">Education</option>
+    <option value="Training">Training</option>
+    <option value="Defence (Training)">Defence (Training)</option>
+    <option value="Healthcare">Healthcare</option>
+    <option value="Engineering">Engineering</option>
+    <option value="Retail">Retail</option>
+    <option value="Technology">Technology</option>
   </select>
 
   <label for="role">Select Role:</label>
   <select id="role">
-    <option>New Teacher</option>
-    <option>Trainer</option>
-    <option>Team Leader</option>
-    <option>Support Staff</option>
+    <!-- Options will be populated dynamically -->
   </select>
 
   <label for="situation">Describe a recent session or situation in your role. What happened? What did you say or do?</label>
-  <textarea id="situation" rows="5" placeholder="Type your classroom or training moment here..."></textarea>
+  <textarea id="situation" placeholder="Describe your experience here..."></textarea>
 
-  <button onclick="generateFeedback()">Get Feedback</button>
+  <button onclick="getFeedback()">Get Feedback</button>
 
-  <div id="response" class="response-box"></div>
+  <div id="response"></div>
 
   <script>
-    function generateFeedback() {
-      const sector = document.getElementById('sector').value;
-      const role = document.getElementById('role').value;
-      const situation = document.getElementById('situation').value.trim().toLowerCase();
-      const responseBox = document.getElementById('response');
+    const sectorRoleMap = {
+      "Education": ["New Teacher", "Senior Leader", "Teaching Assistant"],
+      "Training": ["Instructional Designer", "Trainer", "Learning Technologist"],
+      "Defence (Training)": ["Training Analyst", "Training Designer", "Content Developer"],
+      "Healthcare": ["Nurse Educator", "Junior Doctor", "Clinical Supervisor"],
+      "Engineering": ["Process Engineer", "Systems Designer", "Compliance Lead"],
+      "Retail": ["Floor Manager", "Customer Advisor", "Store Trainer"],
+      "Technology": ["Product Manager", "UX Researcher", "Onboarding Lead"]
+    };
 
-      let feedback = `🏅 Selected Sector: ${sector}\n🧑‍🏫 Selected Role: ${role}\n\n`;
+    function updateRoles() {
+      const sector = document.getElementById("sector").value;
+      const roleSelect = document.getElementById("role");
+      roleSelect.innerHTML = "";
 
-      // 🔍 Safeguarding Trigger Check
-      if (situation.includes("swore") || situation.includes("lost control") || situation.includes("shouted at")) {
-        feedback += "🔴 A serious classroom incident was reported involving loss of control. While emotional responses are human, swearing or losing composure in front of students breaks professional boundaries.\n\n";
-        feedback += "You’ve already taken the first step by recognising the issue. Reflect on what led to that moment and consider:\n- Speaking with your line manager or safeguarding lead\n- Using classroom management resets like silence, proximity, or structured pauses\n- Offering an apology to rebuild trust if appropriate\n\n";
-        feedback += "Taking responsibility and seeking help is a sign of strength. Would you like to simulate this again with a better outcome?";
-        responseBox.innerText = feedback;
-        return;
-      }
-
-      // 🟠 Emotional Check
-      if (situation.includes("frustrated") || situation.includes("overwhelmed") || situation.includes("nobody responded")) {
-        feedback += "🟠 You reported feeling emotionally affected by the moment. This is common, especially in the early stages of your role.\n\n";
-        feedback += "You might try:\n- Asking simpler or more direct questions\n- Modelling an answer first to reduce pressure\n- Doing a short well-being check-in for yourself afterwards\n\n";
-        feedback += "Would you like to simulate a calmer moment or view tips on re-engagement?";
-        responseBox.innerText = feedback;
-        return;
-      }
-
-      // 🟡 Mild Disruption
-      if (situation.includes("chatting") || situation.includes("talking") || situation.includes("ignored") || situation.includes("blank stares")) {
-        feedback += "🟡 Mild disruption or disengagement detected. This could be caused by unclear expectations, timing, or group energy.\n\n";
-        feedback += "Suggestions:\n- Use non-verbal resets like silence or eye contact\n- Ask 'turn and talk' style questions to restart dialogue\n- Praise group effort, not individuals, to maintain balance\n\n";
-        feedback += "Would you like to simulate a group praise moment or neutralise chatty energy?";
-        responseBox.innerText = feedback;
-        return;
-      }
-
-      // 🟢 Calm / Neutral
-      if (situation.includes("no issues") || situation.includes("everyone was focused") || situation.includes("clean run")) {
-        feedback += "🟢 Calm moment detected. A successful session like this is a chance to add extra depth or try stretch techniques.\n\n";
-        feedback += "Ideas:\n- Use success to try new questioning formats\n- Experiment with peer feedback or open-ended questions\n- Reflect on what made it go well — time of day, routine, setup?\n\n";
-        feedback += "Would you like to log this as a best practice scenario or simulate a challenge next time?";
-        responseBox.innerText = feedback;
-        return;
-      }
-
-      // Default Guidance
-      feedback += "🟡 Feedback: I couldn't match this to a known situation. Try:\n- Rewriting with clearer actions\n- Including emotional terms or specific phrases\n\n";
-      feedback += "Would you like to rephrase or simulate a known classroom challenge?";
-      responseBox.innerText = feedback;
+      sectorRoleMap[sector].forEach(role => {
+        const option = document.createElement("option");
+        option.value = role;
+        option.textContent = role;
+        roleSelect.appendChild(option);
+      });
     }
+
+    function getFeedback() {
+      const sector = document.getElementById("sector").value;
+      const role = document.getElementById("role").value;
+      const situation = document.getElementById("situation").value.trim();
+
+      let responseText = "";
+
+      // Simplified logic — real engine will be replaced with smarter context engine
+      if (!situation) {
+        responseText = "Please describe your session before requesting feedback.";
+      } else if (situation.includes("swore") || situation.includes("lost control")) {
+        responseText = `
+        🔴 A serious classroom incident was reported involving loss of control. While emotional responses are human, swearing or losing composure in front of students breaks professional boundaries.
+
+        You've already taken the first step by recognising the issue. Reflect on what led to that moment and consider:
+        - Speaking with your line manager or safeguarding lead
+        - Using classroom management resets like silence, proximity, or structured pauses
+        - Offering an apology to rebuild trust if appropriate
+
+        Taking responsibility and seeking help is a sign of strength. Would you like to simulate this again with a better outcome?`;
+      } else if (situation.includes("shouted") || situation.includes("frustrated")) {
+        responseText = `
+        🟠 You experienced frustration or a loss of calm. This is common, especially under pressure. Try using grounding techniques or classroom resets like ‘Let’s pause here for a moment.’
+
+        Would you like to simulate a version where you remain calm and composed?`;
+      } else if (situation.includes("no response") || situation.includes("blank stares")) {
+        responseText = `
+        🟡 Students may not have understood the question or felt confident. Consider modelling the answer first or breaking it into parts. Engagement doesn’t always mean noise — silence can be thinking too.`;
+      } else {
+        responseText = `
+        🟢 Thank you for sharing. Your experience shows reflection and awareness. Would you like feedback on how to extend or challenge this situation further?`;
+      }
+
+      document.getElementById("response").innerHTML = `
+        <p>🏅 <strong>Selected Sector:</strong> ${sector}</p>
+        <p>👨‍🏫 <strong>Selected Role:</strong> ${role}</p>
+        <p>${responseText}</p>
+      `;
+    }
+
+    // Trigger default on page load
+    window.onload = updateRoles;
   </script>
 </body>
 </html>
