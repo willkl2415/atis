@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ATIS – Dual Menu Interface</title>
+  <title>ATIS – Context Matrix Engine</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -75,7 +75,7 @@
     </select>
 
     <p>Describe a recent session or situation in your role. What happened? What did you say or do?</p>
-    <textarea id="lessonInput" rows="6" placeholder="E.g. I praised one student but got frustrated when others were chatting..."></textarea>
+    <textarea id="lessonInput" rows="6" placeholder="E.g. I praised one student and others were laughing and chattering..."></textarea>
     <button onclick="generateFeedback()">Get Feedback</button>
 
     <div class="response" id="feedbackResponse"></div>
@@ -95,28 +95,38 @@
         return;
       }
 
-      // Placeholder logic (still using education logic only)
-      if (input.includes("praise") || input.includes("well done") || input.includes("good job")) {
-        feedback += "✅ You gave praise — well done! Try to keep it specific to effort or strategy.\n\n";
-      } else {
-        feedback += "🟡 Consider using more praise, even quick encouragements like 'Nice thinking'.\n\n";
+      // Context matrix logic
+      const praise = input.includes("praise") || input.includes("praised");
+      const disruption = input.includes("chatting") || input.includes("laughing") || input.includes("disruption") || input.includes("ignored");
+      const frustration = input.includes("frustrated") || input.includes("irritated") || input.includes("snapped") || input.includes("angry") || input.includes("shouted");
+      const silence = input.includes("quiet") || input.includes("no one responded") || input.includes("blank stares");
+      const effort = input.includes("tried") || input.includes("attempted");
+
+      // Patterns
+      if (praise && disruption) {
+        feedback += "🟠 You praised a student but others responded with disruption. This can sometimes happen if peers feel excluded or the praise was too visible.\n";
+        feedback += "Consider using anonymous praise techniques like 'I saw great teamwork happening on this side of the room' or praising effort types instead of individuals.\n\n";
+      } 
+      else if (disruption && frustration) {
+        feedback += "🔴 Disruption triggered frustration. You're not alone — it's human to feel overwhelmed. Try using neutral resets like 'Let’s pause there' or use proximity and silence to regain calm.\n\n";
+      }
+      else if (silence && effort) {
+        feedback += "🟡 It sounds like you made an effort, but students didn’t respond. This could mean they were unsure. Try framing your question in parts, or model an answer first.\n\n";
+      }
+      else if (praise && !disruption) {
+        feedback += "✅ Good use of praise. Try anchoring it to learning behaviours like 'I liked how you explained your thinking'. This builds future learning, not just positive feelings.\n\n";
+      }
+      else if (frustration && !disruption) {
+        feedback += "🟠 You felt frustrated, even without clear classroom issues. This might signal emotional fatigue. Can ATIS offer a quick well-being check-in or support tool?\n\n";
+      }
+      else if (!praise && !disruption && !frustration) {
+        feedback += "🟢 Calm lesson tone detected. You didn’t mention praise or disruption — perhaps next time try weaving in feedback moments or quick checks for understanding.\n\n";
+      } 
+      else {
+        feedback += "🟡 I picked up part of the story. Would you like to expand it? ATIS can guide on praise, behaviour, questioning, or tone — depending on what happened next.\n\n";
       }
 
-      if (input.includes("question") || input.includes("asked") || input.includes("quiz")) {
-        if (input.includes("yes or no") || input.includes("closed")) {
-          feedback += "🟡 Closed questions spotted — try balancing with open ones for deeper engagement.\n\n";
-        } else {
-          feedback += "✅ Good use of questioning — try targeting different ability levels.\n\n";
-        }
-      } else {
-        feedback += "🟡 Try adding more student questioning next time to check understanding.\n\n";
-      }
-
-      if (input.includes("chatting") || input.includes("disruption") || input.includes("frustrated")) {
-        feedback += "🟠 Classroom behaviour challenge identified — next time try a calm reset or proactive positive narration.\n\n";
-      }
-
-      feedback += "Would you like a tailored walkthrough, simulation, or next-level feedback?";
+      feedback += "Would you like to simulate a similar moment or see a real-world example?";
       document.getElementById("feedbackResponse").innerText = feedback;
     }
   </script>
