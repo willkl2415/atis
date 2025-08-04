@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ATIS – Lesson Feedback Coach</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .response {
+      margin-top: 20px;
+      background: #e0f7fa;
+      padding: 15px;
+      border-radius: 8px;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ATIS – Lesson Feedback Coach</h1>
+    <p>Describe a recent lesson or training session. What did you say? What happened in the room?</p>
+    <textarea id="lessonInput" rows="6" placeholder="E.g. I started with a recap quiz. I praised one student but got frustrated when others were chatting..."></textarea>
+    <button onclick="analyseLesson()">Get Feedback</button>
+    <div class="response" id="feedbackResponse"></div>
+  </div>
+
+  <script>
+    function analyseLesson() {
+      const input = document.getElementById('lessonInput').value.toLowerCase();
+      let response = "Here's your coaching summary:\n\n";
+
+      if (!input.trim()) {
+        document.getElementById('feedbackResponse').innerText = "Please describe your lesson before clicking.";
+        return;
+      }
+
+      // PRAISE
+      if (input.includes("praise") || input.includes("well done") || input.includes("good job")) {
+        response += "✅ You gave praise — great! Try to keep it specific (e.g. 'I liked your reasoning about...').\n\n";
+      } else {
+        response += "🟡 I didn’t spot any praise. Even short phrases like 'nice effort' can go a long way. Want to try adding some next time?\n\n";
+      }
+
+      // BEHAVIOUR REDIRECTION
+      if (input.includes("chatting") || input.includes("disruption") || input.includes("off task") || input.includes("frustrated")) {
+        response += "🟠 You faced some behaviour challenges. When you're frustrated, try short resets: 'Let’s pause there' or 'Eyes on me'.\n\n";
+      }
+
+      // QUESTIONING
+      if (input.includes("question") || input.includes("asked") || input.includes("quiz")) {
+        if (input.includes("yes or no") || input.includes("closed")) {
+          response += "🟡 You used closed questions. Try mixing in open-ended ones to deepen thinking (e.g. 'Why do you think that?').\n\n";
+        } else {
+          response += "✅ Good use of questioning. Open questions promote stronger discussion and insight.\n\n";
+        }
+      } else {
+        response += "🟡 Try to include more student questions next time — even something simple like 'What do you notice?'\n\n";
+      }
+
+      // TONE
+      if (input.includes("shouted") || input.includes("angry") || input.includes("frustrated")) {
+        response += "🔴 Your tone may have been sharp. You’re human — we all have those days. Let’s aim for calm resets next time.\n\n";
+      } else {
+        response += "✅ Your tone seems steady. Keep building that calm, clear presence — it really helps students feel safe.\n\n";
+      }
+
+      response += "Would you like a 2-minute strategy guide or a scenario simulation next?";
+
+      document.getElementById('feedbackResponse').innerText = response;
+    }
+  </script>
+</body>
+</html>
