@@ -1,48 +1,47 @@
 import os
-import openai
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
+import openai
 
-# Load environment variables
+# Load API Key from .env
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
-
-print(f"🔐 Loaded API Key: {'SET' if api_key else 'NOT SET'}")
-
 openai.api_key = api_key
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/generate', methods=['POST'])
+@app.route("/generate", methods=["POST"])
 def generate():
     try:
         data = request.get_json()
-        prompt = data.get("prompt", "")
-        role = data.get("role", "")
-        sector = data.get("sector", "")
+        prompt = data.get("prompt")
+        sector = data.get("sector")
+        role = data.get("role")
 
-        if not api_key:
-            raise ValueError("API key not found or not loaded.")
+        # Combine all user inputs
+        full_prompt = f"Sector: {sector}\nRole: {role}\nPrompt: {prompt}"
 
-        response = openai.ChatCompletion.create(
-            model="gpt-4-turbo",
+        # Use the new v1 format
+        response = openai.chat.completions.create(
+            model="gpt-4",
             messages=[
-                {"role": "system", "content": f"You are an expert assistant for someone working in the {sector} sector as a {role}."},
-                {"role": "user", "content": prompt}
-            ]
+                {"role": "system", "content": "You are an expert AI assistant helping with defence training and coaching."},
+                {"role": "user", "content": full_prompt}
+            ],
+            temperature=0.5,
+            max_tokens=600
         )
 
-        reply = response['choices'][0]['message']['content']
+        reply = response.choices[0].message.content.strip()
         return jsonify({"response": reply})
 
     except Exception as e:
-        print("❌ Error occurred in /generate route:")
-        print(e)
+        print(f"❌ Error occurred in /generate route:\n\n{e}\n")
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
