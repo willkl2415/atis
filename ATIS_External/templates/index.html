@@ -6,91 +6,78 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
             background-color: #FFFF00;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
-            padding: 40px 0;
+            padding: 0;
         }
 
         .container {
             background-color: white;
-            max-width: 700px;
-            margin: 0 auto;
+            width: 50%;
+            margin: 40px auto;
             padding: 30px 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
         }
 
         h1 {
             text-align: center;
-            font-size: 1.6rem;
             margin-bottom: 30px;
         }
 
         label {
             font-weight: bold;
-            display: block;
             margin-top: 15px;
+            display: inline-block;
         }
 
         select, textarea {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
-            border: 1px solid #999;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 14px;
             font-family: 'Roboto', sans-serif;
         }
 
-        textarea {
-            height: 100px;
-        }
-
         button {
-            margin-top: 25px;
             width: 100%;
             padding: 12px;
-            font-size: 16px;
-            background-color: #2E2E80;
+            background-color: #2e2f87;
             color: white;
             border: none;
             border-radius: 4px;
+            font-size: 16px;
             cursor: pointer;
+            font-family: 'Roboto', sans-serif;
         }
 
         button:hover {
-            background-color: #1d1d5e;
+            background-color: #1e1f5e;
         }
 
         .response {
             margin-top: 30px;
-            background-color: white;
-            border-left: 5px solid #2E2E80;
             padding: 20px;
+            border: 1px solid #ccc;
             border-radius: 6px;
+            background-color: #f9f9f9;
+            font-size: 15px;
             line-height: 1.6;
             white-space: pre-wrap;
-            font-size: 15px;
-        }
-
-        .error {
-            margin-top: 30px;
-            background-color: #ffe6e6;
-            color: #990000;
-            border-left: 5px solid #990000;
-            padding: 20px;
-            border-radius: 6px;
-            font-size: 15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>ATIS External (GPT-4 Turbo Powered)</h1>
-        <form method="POST" action="/generate">
+        <form id="prompt-form">
             <label for="sector">Select Sector:</label>
-            <select name="sector" id="sector" required>
-                <option value="Defence (Training)" {% if sector == "Defence (Training)" %}selected{% endif %}>Defence (Training)</option>
+            <select id="sector" name="sector">
+                <option value="Defence (Training)">Defence (Training)</option>
                 <option value="Education">Education</option>
                 <option value="Healthcare">Healthcare</option>
                 <option value="Finance">Finance</option>
@@ -99,23 +86,49 @@
             </select>
 
             <label for="role">Select Role:</label>
-            <select name="role" id="role" required>
-                <option value="Training Analyst" {% if role == "Training Analyst" %}selected{% endif %}>Training Analyst</option>
-                <option value="Training Designer" {% if role == "Training Designer" %}selected{% endif %}>Training Designer</option>
-                <option value="Content Developer" {% if role == "Content Developer" %}selected{% endif %}>Content Developer</option>
+            <select id="role" name="role">
+                <option value="Training Analyst">Training Analyst</option>
+                <option value="Training Designer">Training Designer</option>
+                <option value="Content Developer">Content Developer</option>
             </select>
 
             <label for="prompt">Enter your prompt:</label>
-            <textarea name="prompt" id="prompt" required>{{ prompt or '' }}</textarea>
+            <textarea id="prompt" name="prompt" rows="5" placeholder="Type your question here..."></textarea>
 
             <button type="submit">Submit</button>
         </form>
 
-        {% if response %}
-            <div class="response">{{ response }}</div>
-        {% elif error %}
-            <div class="error">❌ {{ error }}</div>
-        {% endif %}
+        <div id="response" class="response" style="display:none;"></div>
     </div>
+
+    <script>
+        const form = document.getElementById('prompt-form');
+        const responseDiv = document.getElementById('response');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const sector = document.getElementById('sector').value;
+            const role = document.getElementById('role').value;
+            const prompt = document.getElementById('prompt').value;
+
+            const response = await fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sector, role, prompt })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                responseDiv.textContent = data.response;
+                responseDiv.style.display = 'block';
+            } else {
+                responseDiv.textContent = 'Something went wrong. Try again.';
+                responseDiv.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
