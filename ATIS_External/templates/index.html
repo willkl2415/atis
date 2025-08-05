@@ -58,7 +58,7 @@
         <h2>ATIS External (GPT-4 Turbo Powered)</h2>
         <form id="prompt-form">
             <label for="sector">Select Sector:</label>
-            <select id="sector" name="sector">
+            <select id="sector" name="sector" required>
                 <option value="Defence (Training)">Defence (Training)</option>
                 <option value="Education">Education</option>
                 <option value="Healthcare">Healthcare</option>
@@ -69,7 +69,7 @@
             </select>
 
             <label for="role">Select Role:</label>
-            <select id="role" name="role">
+            <select id="role" name="role" required>
                 <option value="Training Analyst">Training Analyst</option>
                 <option value="Training Designer">Training Designer</option>
                 <option value="Content Developer">Content Developer</option>
@@ -88,18 +88,23 @@
         document.getElementById('prompt-form').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const sector = document.getElementById('sector').value;
-            const role = document.getElementById('role').value;
-            const prompt = document.getElementById('prompt').value;
+            const prompt = document.getElementById('prompt').value.trim();
+            const sector = document.getElementById('sector').value.trim();
+            const role = document.getElementById('role').value.trim();
 
             const responseBox = document.getElementById('response');
             responseBox.style.display = 'none';
             responseBox.innerText = '';
 
+            if (!prompt) {
+                alert("Please enter a prompt.");
+                return;
+            }
+
             const response = await fetch('/generate', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     prompt: prompt,
