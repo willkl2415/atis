@@ -1,48 +1,49 @@
 import os
-from flask import Flask, render_template, request
-from dotenv import load_dotenv
 import openai
+from flask import Flask, render_template, request, jsonify
+from dotenv import load_dotenv
 
-# ✅ Load .env explicitly from same folder as this script
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-
-# ✅ Load API key and set it
+# Load API key from .env file
+load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
-print(f"🔐 Loaded API Key: {api_key[:10]}..." if api_key else "❌ API Key NOT LOADED")
+print(f"🔐 Loaded API Key: {'set' if api_key else 'not set'}")
+
+# Setup OpenAI API key
 openai.api_key = api_key
 
+# Create Flask app
 app = Flask(__name__)
 
-# ✅ Main route
+# Root route
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# ✅ Prompt submission route
-@app.route('/submit', methods=['POST'])
-def submit():
-    sector = request.form['sector']
-    role = request.form['role']
-    prompt = request.form['prompt']
-
+# Handle prompt submission from the frontend
+@app.route('/generate', methods=['POST'])
+def generate():
     try:
-        # GPT inference call
+        data = request.get_json()
+        prompt = data.get("prompt", "")
+        role = data.get("role", "")
+        sector = data.get("sector", "")
+
+        # Generate response from OpenAI
         response = openai.ChatCompletion.create(
-            model="gpt-4o",
+            model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": f"You are an AI assistant for the {sector} sector. The user's role is {role}."},
+                {"role": "system", "content": f"You are an expert assistant for someone working in the {sector} sector as a {role}."},
                 {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=800
+            ]
         )
 
-        reply = response.choices[0].message.content.strip()
-        return render_template('index.html', output=reply, sector=sector, role=role, prompt=prompt)
+        reply = response['choices'][0]['message']['content']
+        return jsonify({"response": reply})
 
     except Exception as e:
-        return render_template('index.html', output=f"Error: {str(e)}", sector=sector, role=role, prompt=prompt)
+        print(f"❌ Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
+# Run the app
 if __name__ == '__main__':
     app.run(debug=True)
