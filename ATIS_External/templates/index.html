@@ -9,93 +9,110 @@
             margin: 40px;
             background-color: #f4f4f4;
         }
+
         h1 {
-            color: #333;
+            color: #222;
         }
+
         label {
             font-weight: bold;
-            display: block;
-            margin-top: 20px;
         }
+
         select, textarea, button {
             width: 100%;
             padding: 10px;
-            margin-top: 10px;
-            font-size: 16px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
         }
-        #responseBox {
-            background-color: #e8f0fe;
-            border-left: 6px solid #4285f4;
-            padding: 20px;
-            margin-top: 30px;
-            white-space: pre-wrap;
-            min-height: 100px;
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #303f9f;
+        }
+
+        #response-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #e0f7fa;
+            border: 1px solid #26c6da;
         }
     </style>
 </head>
 <body>
+
     <h1>ATIS External (GPT-4 Turbo Powered)</h1>
 
-    <label for="sector">Select Sector:</label>
-    <select id="sector">
-        <option>Defence (Training)</option>
-        <option>Education</option>
-        <option>Healthcare</option>
-        <option>Engineering</option>
-        <option>Retail</option>
-        <option>Finance</option>
-        <option>Government</option>
-        <option>Technology</option>
-    </select>
+    <form>
+        <label for="sector">Select Sector:</label>
+        <select name="sector" id="sector">
+            <option value="Defence (Training)">Defence (Training)</option>
+            <option value="Education">Education</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Finance">Finance</option>
+            <option value="Retail">Retail</option>
+            <option value="Manufacturing">Manufacturing</option>
+            <option value="Technology">Technology</option>
+        </select>
 
-    <label for="role">Select Role:</label>
-    <select id="role">
-        <option>Training Analyst</option>
-        <option>Training Designer</option>
-        <option>Content Developer</option>
-        <option>Team Leader</option>
-        <option>Project Manager</option>
-        <option>HR Manager</option>
-        <option>Learning Consultant</option>
-        <option>Systems Engineer</option>
-    </select>
+        <label for="role">Select Role:</label>
+        <select name="role" id="role">
+            <option value="Training Analyst">Training Analyst</option>
+            <option value="Training Designer">Training Designer</option>
+            <option value="Content Developer">Content Developer</option>
+            <option value="Instructor">Instructor</option>
+            <option value="Project Manager">Project Manager</option>
+        </select>
 
-    <label for="prompt">Enter your prompt:</label>
-    <textarea id="prompt" rows="6" placeholder="Type your question or task here..."></textarea>
+        <label for="prompt">Enter your prompt:</label>
+        <textarea name="prompt" id="prompt" placeholder="Type your coaching request or question here..."></textarea>
 
-    <button onclick="submitPrompt()">Submit</button>
+        <button type="submit">Submit</button>
+    </form>
 
-    <div id="responseBox">Your response will appear here.</div>
+    <div id="response-box"></div>
 
     <script>
-        async function submitPrompt() {
-            const sector = document.getElementById("sector").value;
-            const role = document.getElementById("role").value;
-            const prompt = document.getElementById("prompt").value.trim();
-            const responseBox = document.getElementById("responseBox");
-
-            if (!prompt) {
-                responseBox.textContent = "Please enter a prompt.";
-                return;
-            }
-
-            responseBox.textContent = "Thinking...";
+        document.querySelector("form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const sector = document.querySelector("select[name='sector']").value;
+            const role = document.querySelector("select[name='role']").value;
+            const prompt = document.querySelector("textarea[name='prompt']").value;
+            const responseBox = document.getElementById("response-box");
+            responseBox.innerHTML = "⏳ Processing...";
 
             try {
-                const res = await fetch("http://127.0.0.1:5000/generate", {
+                const res = await fetch("/generate", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ sector, role, prompt })
                 });
 
-                const data = await res.json();
-                responseBox.textContent = data.response || "No response received.";
-            } catch (error) {
-                responseBox.textContent = "Error contacting the server. Please ensure the Flask backend is running.";
+                const result = await res.json();
+                if (res.ok) {
+                    responseBox.innerHTML = result.response;
+                } else {
+                    responseBox.innerHTML = `❌ API error: ${result.error}`;
+                }
+            } catch (err) {
+                responseBox.innerHTML = `❌ Network error: ${err}`;
             }
-        }
+        });
     </script>
+
 </body>
 </html>
