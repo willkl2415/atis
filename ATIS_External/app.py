@@ -1,12 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import openai
 import os
 from dotenv import load_dotenv
+from openai import OpenAI, OpenAIError
 
+# Load environment variables
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("OPENAI_API_KEY")
 
+if not api_key:
+    raise ValueError("❌ OPENAI_API_KEY is missing in your .env file.")
+
+# Setup OpenAI client
+client = OpenAI(api_key=api_key)
+
+# Setup Flask app
 app = Flask(__name__)
 CORS(app)
 
@@ -26,7 +34,7 @@ def generate_response():
     )
 
     try:
-        completion = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": "You are an expert AI assistant trained to give sector-specific and role-appropriate answers."},
@@ -36,10 +44,10 @@ def generate_response():
             max_tokens=800
         )
 
-        gpt_output = completion.choices[0].message.content.strip()
+        gpt_output = response.choices[0].message.content.strip()
         return jsonify({"response": gpt_output})
 
-    except Exception as e:
+    except OpenAIError as e:
         return jsonify({"response": f"Error: {str(e)}"})
 
 if __name__ == "__main__":
