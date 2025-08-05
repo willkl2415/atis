@@ -9,7 +9,14 @@
             font-family: 'Roboto', sans-serif;
             background-color: #f4f4f4;
             margin: 0;
-            padding: 20px;
+            padding: 40px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 50%;
+            min-width: 400px;
         }
 
         h2 {
@@ -46,7 +53,7 @@
 
         .response {
             margin-top: 30px;
-            background-color: #ffff00; /* FORCED BRIGHT YELLOW */
+            background-color: #ffff00;
             color: #111;
             padding: 20px;
             border-radius: 10px;
@@ -68,37 +75,39 @@
     </style>
 </head>
 <body>
-    <h2>ATIS External (GPT-4 Turbo Powered)</h2>
+    <div class="container">
+        <h2>ATIS External (GPT-4 Turbo Powered)</h2>
 
-    <form id="prompt-form">
-        <label for="sector">Select Sector:</label>
-        <select id="sector" name="sector" required>
-            <option value="Defence (Training)">Defence (Training)</option>
-            <option value="Education">Education</option>
-            <option value="Healthcare">Healthcare</option>
-            <option value="Finance">Finance</option>
-            <option value="Technology">Technology</option>
-            <option value="Retail">Retail</option>
-            <option value="Manufacturing">Manufacturing</option>
-        </select>
+        <form id="prompt-form">
+            <label for="sector">Select Sector:</label>
+            <select id="sector" name="sector" required>
+                <option value="Defence (Training)">Defence (Training)</option>
+                <option value="Education">Education</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Finance">Finance</option>
+                <option value="Technology">Technology</option>
+                <option value="Retail">Retail</option>
+                <option value="Manufacturing">Manufacturing</option>
+            </select>
 
-        <label for="role">Select Role:</label>
-        <select id="role" name="role" required>
-            <option value="Training Analyst">Training Analyst</option>
-            <option value="Training Designer">Training Designer</option>
-            <option value="Content Developer">Content Developer</option>
-            <option value="Instructor">Instructor</option>
-            <option value="Training Manager">Training Manager</option>
-        </select>
+            <label for="role">Select Role:</label>
+            <select id="role" name="role" required>
+                <option value="Training Analyst">Training Analyst</option>
+                <option value="Training Designer">Training Designer</option>
+                <option value="Content Developer">Content Developer</option>
+                <option value="Instructor">Instructor</option>
+                <option value="Training Manager">Training Manager</option>
+            </select>
 
-        <label for="prompt">Enter your prompt:</label>
-        <textarea id="prompt" name="prompt" rows="6" required></textarea>
+            <label for="prompt">Enter your prompt:</label>
+            <textarea id="prompt" name="prompt" rows="6" required></textarea>
 
-        <button type="submit">Submit</button>
-    </form>
+            <button type="submit">Submit</button>
+        </form>
 
-    <div id="response" class="response" style="display: none;"></div>
-    <div id="error" class="error" style="display: none;"></div>
+        <div id="response" class="response" style="display: none;"></div>
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
 
     <script>
         document.getElementById('prompt-form').addEventListener('submit', async function (e) {
