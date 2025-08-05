@@ -6,129 +6,141 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #FFFF00;
-            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #FFFF00;
+            font-family: 'Roboto', sans-serif;
         }
 
         .container {
             background-color: white;
             width: 50%;
-            margin: 40px auto;
-            padding: 30px 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
         }
 
-        h1 {
+        h2 {
             text-align: center;
-            margin-bottom: 30px;
+            color: #000000;
+            margin-bottom: 20px;
         }
 
         label {
-            font-weight: bold;
-            margin-top: 15px;
-            display: inline-block;
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 5px;
+            font-weight: 600;
         }
 
         select, textarea {
             width: 100%;
             padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
+            font-size: 16px;
+            border: 1px solid #aaa;
             border-radius: 4px;
-            font-size: 14px;
-            font-family: 'Roboto', sans-serif;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
         }
 
         button {
             width: 100%;
+            margin-top: 20px;
             padding: 12px;
-            background-color: #2e2f87;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #2c2c84;
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
+            border-radius: 6px;
             cursor: pointer;
-            font-family: 'Roboto', sans-serif;
         }
 
         button:hover {
-            background-color: #1e1f5e;
+            background-color: #1b1b66;
         }
 
-        .response {
+        .output {
             margin-top: 30px;
             padding: 20px;
-            border: 1px solid #ccc;
+            border: 1px solid #aaa;
             border-radius: 6px;
-            background-color: #f9f9f9;
-            font-size: 15px;
-            line-height: 1.6;
+            background-color: #ffffff;
             white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 15px;
+            color: #333333;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ATIS External (GPT-4 Turbo Powered)</h1>
-        <form id="prompt-form">
-            <label for="sector">Select Sector:</label>
-            <select id="sector" name="sector">
-                <option value="Defence (Training)">Defence (Training)</option>
-                <option value="Education">Education</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Finance">Finance</option>
-                <option value="Manufacturing">Manufacturing</option>
-                <option value="Technology">Technology</option>
-            </select>
+        <h2>ATIS External (GPT-4 Turbo Powered)</h2>
 
-            <label for="role">Select Role:</label>
-            <select id="role" name="role">
-                <option value="Training Analyst">Training Analyst</option>
-                <option value="Training Designer">Training Designer</option>
-                <option value="Content Developer">Content Developer</option>
-            </select>
+        <label for="sector">Select Sector:</label>
+        <select id="sector">
+            <option value="Defence (Training)">Defence (Training)</option>
+        </select>
 
-            <label for="prompt">Enter your prompt:</label>
-            <textarea id="prompt" name="prompt" rows="5" placeholder="Type your question here..."></textarea>
+        <label for="role">Select Role:</label>
+        <select id="role">
+            <option value="Training Analyst">Training Analyst</option>
+            <option value="Training Designer">Training Designer</option>
+            <option value="Content Developer">Content Developer</option>
+        </select>
 
-            <button type="submit">Submit</button>
-        </form>
+        <label for="prompt">Enter your prompt:</label>
+        <textarea id="prompt" placeholder="e.g. I could not remember DIF Analysis in front of the client this morning..."></textarea>
 
-        <div id="response" class="response" style="display:none;"></div>
+        <button onclick="generateResponse()">Submit</button>
+
+        <div class="output" id="responseBox" style="display:none;"></div>
     </div>
 
     <script>
-        const form = document.getElementById('prompt-form');
-        const responseDiv = document.getElementById('response');
+        async function generateResponse() {
+            const prompt = document.getElementById("prompt").value.trim();
+            const sector = document.getElementById("sector").value.trim();
+            const role = document.getElementById("role").value.trim();
 
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            const sector = document.getElementById('sector').value;
-            const role = document.getElementById('role').value;
-            const prompt = document.getElementById('prompt').value;
-
-            const response = await fetch('/generate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ sector, role, prompt })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                responseDiv.textContent = data.response;
-                responseDiv.style.display = 'block';
-            } else {
-                responseDiv.textContent = 'Something went wrong. Try again.';
-                responseDiv.style.display = 'block';
+            if (!prompt) {
+                alert("Please enter a prompt.");
+                return;
             }
-        });
+
+            const responseBox = document.getElementById("responseBox");
+            responseBox.style.display = "block";
+            responseBox.innerText = "⏳ Thinking...";
+
+            try {
+                const response = await fetch("/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        sector: sector,
+                        role: role
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.response) {
+                    responseBox.innerText = data.response;
+                } else {
+                    responseBox.innerText = "❌ No response returned.";
+                }
+            } catch (error) {
+                responseBox.innerText = "❌ An error occurred while generating the response.";
+                console.error(error);
+            }
+        }
     </script>
 </body>
 </html>
