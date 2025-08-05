@@ -7,112 +7,119 @@
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
-            background-color: #f4f4f4;
+            background-color: #f8f9fa;
         }
-
         h1 {
-            color: #222;
+            color: #333;
         }
-
-        label {
-            font-weight: bold;
-        }
-
         select, textarea, button {
             width: 100%;
-            padding: 10px;
-            margin-top: 8px;
             margin-bottom: 20px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 14px;
+            padding: 10px;
+            font-size: 16px;
         }
-
         textarea {
             height: 120px;
             resize: vertical;
         }
-
         button {
-            background-color: #3f51b5;
+            background-color: #3b50c1;
             color: white;
             border: none;
             cursor: pointer;
         }
-
         button:hover {
-            background-color: #303f9f;
+            background-color: #2f3a91;
         }
-
-        #response-box {
+        .response-box {
             margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            background-color: #e0f7fa;
-            border: 1px solid #26c6da;
+            padding: 20px;
+            background-color: #eaf1fb;
+            border-left: 6px solid #3b50c1;
+            white-space: pre-wrap;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .error-box {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8d7da;
+            border-left: 6px solid #d9534f;
+            color: #721c24;
+            white-space: pre-wrap;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-
     <h1>ATIS External (GPT-4 Turbo Powered)</h1>
 
-    <form>
-        <label for="sector">Select Sector:</label>
-        <select name="sector" id="sector">
-            <option value="Defence (Training)">Defence (Training)</option>
-            <option value="Education">Education</option>
-            <option value="Healthcare">Healthcare</option>
-            <option value="Finance">Finance</option>
-            <option value="Retail">Retail</option>
-            <option value="Manufacturing">Manufacturing</option>
-            <option value="Technology">Technology</option>
-        </select>
+    <label for="sector">Select Sector:</label>
+    <select id="sector">
+        <option>Defence (Training)</option>
+        <option>Education</option>
+        <option>Healthcare</option>
+        <option>Energy</option>
+        <option>Finance</option>
+    </select>
 
-        <label for="role">Select Role:</label>
-        <select name="role" id="role">
-            <option value="Training Analyst">Training Analyst</option>
-            <option value="Training Designer">Training Designer</option>
-            <option value="Content Developer">Content Developer</option>
-            <option value="Instructor">Instructor</option>
-            <option value="Project Manager">Project Manager</option>
-        </select>
+    <label for="role">Select Role:</label>
+    <select id="role">
+        <option>Training Analyst</option>
+        <option>Training Designer</option>
+        <option>Content Developer</option>
+        <option>Manager</option>
+        <option>Technician</option>
+    </select>
 
-        <label for="prompt">Enter your prompt:</label>
-        <textarea name="prompt" id="prompt" placeholder="Type your coaching request or question here..."></textarea>
+    <label for="prompt">Enter your prompt:</label>
+    <textarea id="prompt" placeholder="e.g. Remind me of the Analysis steps from DSAT..."></textarea>
 
-        <button type="submit">Submit</button>
-    </form>
+    <button onclick="submitPrompt()">Submit</button>
 
-    <div id="response-box"></div>
+    <div id="output" class="response-box" style="display:none;"></div>
+    <div id="error" class="error-box" style="display:none;"></div>
 
     <script>
-        document.querySelector("form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const sector = document.querySelector("select[name='sector']").value;
-            const role = document.querySelector("select[name='role']").value;
-            const prompt = document.querySelector("textarea[name='prompt']").value;
-            const responseBox = document.getElementById("response-box");
-            responseBox.innerHTML = "⏳ Processing...";
+        function submitPrompt() {
+            const prompt = document.getElementById("prompt").value;
+            const sector = document.getElementById("sector").value;
+            const role = document.getElementById("role").value;
 
-            try {
-                const res = await fetch("/generate", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sector, role, prompt })
-                });
+            fetch("/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ prompt, sector, role })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const output = document.getElementById("output");
+                const error = document.getElementById("error");
 
-                const result = await res.json();
-                if (res.ok) {
-                    responseBox.innerHTML = result.response;
+                if (data.response) {
+                    output.style.display = "block";
+                    error.style.display = "none";
+                    output.textContent = data.response;
+                } else if (data.error) {
+                    output.style.display = "none";
+                    error.style.display = "block";
+                    error.textContent = "❌ API error: " + data.error;
                 } else {
-                    responseBox.innerHTML = `❌ API error: ${result.error}`;
+                    output.style.display = "none";
+                    error.style.display = "block";
+                    error.textContent = "❌ No response received.";
                 }
-            } catch (err) {
-                responseBox.innerHTML = `❌ Network error: ${err}`;
-            }
-        });
+            })
+            .catch(err => {
+                const error = document.getElementById("error");
+                const output = document.getElementById("output");
+                output.style.display = "none";
+                error.style.display = "block";
+                error.textContent = "❌ Error contacting server. Please ensure the Flask backend is running.\n\n" + err;
+            });
+        }
     </script>
-
 </body>
 </html>
