@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f4f4f4;
             margin: 0;
             padding: 20px;
         }
@@ -46,13 +46,15 @@
 
         .response {
             margin-top: 30px;
-            background-color: #FFFF00;
+            background-color: #ffff00; /* FORCED BRIGHT YELLOW */
+            color: #111;
             padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+            border-radius: 10px;
+            border: 2px solid #cccc00;
             white-space: pre-wrap;
             font-size: 16px;
-            color: #222;
+            font-family: 'Roboto', sans-serif;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
         }
 
         .error {
@@ -60,16 +62,8 @@
             background-color: #ffe6e6;
             color: #cc0000;
             padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #cc0000;
-        }
-
-        .response p {
-            margin-bottom: 12px;
-        }
-
-        .response li {
-            margin-bottom: 8px;
+            border-radius: 10px;
+            border: 2px solid #cc0000;
         }
     </style>
 </head>
@@ -122,11 +116,24 @@
             try {
                 const res = await fetch('/generate', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sector, role, prompt })
                 });
 
                 const data = await res.json();
 
                 if (res.ok && data.response) {
-                    responseDiv.innerHTML = data.response.replace(/\*\*/g, '');  // remove all aster
+                    responseDiv.innerHTML = data.response.replace(/\*\*/g, '');
+                    responseDiv.style.display = 'block';
+                } else {
+                    errorDiv.textContent = 'No response received.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Error contacting the server. Please ensure the Flask backend is running.';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
