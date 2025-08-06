@@ -1,21 +1,22 @@
 import os
 import openai
 import uvicorn
-from fastapi import FastAPI, Request
+import asyncio
+import hashlib
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import asyncio
-import hashlib
+from openai import AsyncOpenAI
 
 # Load API key
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Init FastAPI
+# FastAPI app
 app = FastAPI()
 
-# CORS policy for local/frontend access
+# CORS policy
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,38 +31,35 @@ class GPTRequest(BaseModel):
     role: str
     prompt: str
 
-# In-memory LRU cache (size: 10)
+# Simple in-memory cache
 cache = {}
 
 def make_cache_key(sector, role, prompt):
     return hashlib.sha256(f"{sector}|{role}|{prompt}".encode()).hexdigest()
 
-# GPT Inference Function
+# GPT inference function (OpenAI v1+)
 async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
     cache_key = make_cache_key(sector, role, prompt)
     if cache_key in cache:
         return cache[cache_key]
 
-    # Compress prompt for speed
-    system_msg = f"You are an AI assistant supporting someone in the '{role}' role within the '{sector}' sector. Provide clear, practical help in plain English."
-    user_msg = prompt.strip()
+    system_prompt = f"You are an AI assistant supporting someone in the '{role}' role within the '{sector}' sector. Provide clear, practical help in plain English."
 
     try:
-        response = await openai.ChatCompletion.acreate(
+        response = await client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": system_msg},
-                {"role": "user", "content": user_msg}
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt.strip()}
             ],
             temperature=0.7,
             top_p=1.0,
-            max_tokens=512,
-            response_format="text"
+            max_tokens=512
         )
         reply = response.choices[0].message.content.strip()
         cache[cache_key] = reply
 
-        # Trim cache to last 10 entries
+        # Limit cache to 10 items
         if len(cache) > 10:
             cache.pop(next(iter(cache)))
         return reply
@@ -69,13 +67,13 @@ async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
     except Exception as e:
         return f"Error: {str(e)}"
 
-# POST Endpoint
+# Route: POST /generate
 @app.post("/generate")
-async def generate_gpt_response(request: GPTRequest):
-    response = await get_gpt_response(request.sector, request.role, request.prompt)
-    return {"response": response}
+async def generate_response(request: GPTRequest):
+    reply = await get_gpt_response(request.sector, request.role, request.prompt)
+    return {"response": reply}
 
-# Health Check
+# Health check
 @app.get("/")
 def read_root():
     return {"message": "ATIS External GPT API is running."}
