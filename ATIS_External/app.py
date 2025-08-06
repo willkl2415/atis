@@ -1,17 +1,17 @@
 from flask import Flask, render_template, request, jsonify
 import os
-import openai
 from dotenv import load_dotenv
+from openai import OpenAI, OpenAIError
 
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
 
+api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     raise ValueError("❌ OPENAI_API_KEY not found in .env file.")
 
-# Set OpenAI key using new v1.0+ method
-openai_client = openai.OpenAI(api_key=api_key)
+# Create OpenAI client using new v1+ syntax
+client = OpenAI(api_key=api_key)
 
 app = Flask(__name__)
 
@@ -23,6 +23,7 @@ def index():
 def generate():
     try:
         data = request.get_json()
+
         prompt = data.get("prompt", "").strip()
         sector = data.get("sector", "").strip()
         role = data.get("role", "").strip()
@@ -32,22 +33,27 @@ def generate():
         if not prompt:
             return jsonify({'response': 'Prompt is required.'}), 400
 
-        # Create chat response
-        response = openai_client.chat.completions.create(
+        system_msg = f"You are an AI assistant in the {sector} sector, acting as a {role}."
+        user_msg = prompt
+
+        completion = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": f"You are an AI assistant in the {sector} sector, performing the role of a {role}."},
-                {"role": "user", "content": prompt}
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": user_msg}
             ]
         )
 
-        reply = response.choices[0].message.content.strip()
-        return jsonify({'response': reply})
+        result = completion.choices[0].message.content.strip()
+        return jsonify({'response': result})
+
+    except OpenAIError as oe:
+        print("❌ OpenAI API Error:", oe)
+        return jsonify({'response': 'OpenAI API error occurred.'}), 500
 
     except Exception as e:
-        print("❌ Error occurred in /generate route:")
-        print(e)
-        return jsonify({'response': 'Error generating response.'}), 500
+        print("❌ General Error in /generate:", e)
+        return jsonify({'response': 'Internal server error occurred.'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
