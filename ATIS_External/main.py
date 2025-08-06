@@ -3,7 +3,9 @@ import uvicorn
 import asyncio
 import hashlib
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -13,14 +15,14 @@ from openai import AsyncOpenAI
 load_dotenv()
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Enable logging
+# Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("atis")
 
-# Init FastAPI
+# App init
 app = FastAPI()
 
-# Enable CORS for browser access
+# CORS for API calls
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,35 +31,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Cache
+cache = {}
+
 # Request schema
 class GPTRequest(BaseModel):
     sector: str
     role: str
     prompt: str
 
-# In-memory cache
-cache = {}
-
+# Cache key
 def make_cache_key(sector, role, prompt):
     return hashlib.sha256(f"{sector}|{role}|{prompt}".encode()).hexdigest()
 
-# GPT call
-async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
-    cache_key = make_cache_key(sector, role, prompt)
+# Serve the test.html from local folder
+@app.get("/")
+async def serve_ui():
+    return FileResponse("test.html")
 
+# Handle GPT
+@app.post("/generate")
+async def generate_response(request: GPTRequest):
+    logger.info(f"Request: Sector={request.sector}, Role={request.role}, Prompt={request.prompt}")
+
+    cache_key = make_cache_key(request.sector, request.role, request.prompt)
     if cache_key in cache:
         logger.info("Cache hit")
-        return cache[cache_key]
+        return JSONResponse(content={"response": cache[cache_key]})
 
-    system_prompt = f"You are an AI assistant supporting someone in the '{role}' role within the '{sector}' sector. Provide clear, practical help in plain English."
+    system_prompt = f"You are an AI assistant supporting someone in the '{request.role}' role within the '{request.sector}' sector. Provide clear, practical help in plain English."
 
     try:
-        logger.info("Sending prompt to OpenAI")
+        logger.info("Sending to OpenAI...")
         response = await client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt.strip()}
+                {"role": "user", "content": request.prompt.strip()}
             ],
             temperature=0.7,
             top_p=1.0,
@@ -70,25 +80,13 @@ async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
         cache[cache_key] = reply
         if len(cache) > 10:
             cache.pop(next(iter(cache)))
-        return reply
+
+        return JSONResponse(content={"response": reply})
 
     except Exception as e:
         logger.error(f"OpenAI error: {e}")
-        return f"Error: {str(e)}"
+        return JSONResponse(content={"response": f"Error: {str(e)}"})
 
-# API POST
-@app.post("/generate")
-async def generate_response(request: GPTRequest):
-    logger.info(f"Received request: Sector={request.sector}, Role={request.role}, Prompt={request.prompt}")
-    reply = await get_gpt_response(request.sector, request.role, request.prompt)
-    logger.info(f"Sending response: {reply[:100]}...")
-    return {"response": reply}
-
-# API GET root
-@app.get("/")
-def read_root():
-    return {"message": "ATIS External GPT API is running."}
-
-# Entry point
+# Start server
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
