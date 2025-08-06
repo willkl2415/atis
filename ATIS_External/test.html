@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ATIS External Test</title>
+  <style>
+    body {
+      font-family: Roboto, sans-serif;
+      background-color: #fff8dc;
+      padding: 40px;
+      color: #333;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 20px;
+    }
+    textarea, input {
+      width: 100%;
+      max-width: 600px;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #f1c40f;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #d4ac0d;
+    }
+    #response {
+      margin-top: 30px;
+      background-color: #fffff0;
+      border: 1px solid #ccc;
+      padding: 20px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>ATIS External Prompt Tester</h2>
+
+  <label for="sector">Sector</label>
+  <input type="text" id="sector" value="Defence (Training)">
+
+  <label for="role">Role</label>
+  <input type="text" id="role" value="Training Analyst">
+
+  <label for="prompt">Prompt</label>
+  <textarea id="prompt" rows="6">What is the purpose of the DSAT Analysis phase?</textarea>
+
+  <button onclick="submitPrompt()">Submit Prompt</button>
+
+  <div id="response"></div>
+
+  <script>
+    async function submitPrompt() {
+      const sector = document.getElementById("sector").value.trim();
+      const role = document.getElementById("role").value.trim();
+      const prompt = document.getElementById("prompt").value.trim();
+      const responseBox = document.getElementById("response");
+
+      if (!sector || !role || !prompt) {
+        responseBox.textContent = "Please fill in all fields before submitting.";
+        return;
+      }
+
+      responseBox.textContent = "Thinking...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:8002/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sector, role, prompt })
+        });
+
+        const data = await res.json();
+        responseBox.textContent = data.response || "No response received.";
+      } catch (err) {
+        responseBox.textContent = "Error: " + err.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
