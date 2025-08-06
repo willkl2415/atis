@@ -30,7 +30,7 @@ async def generate_response(
         print(f"📥 Received Prompt: {prompt} | Sector: {sector} | Role: {role}")
 
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": f"You are an expert in {sector} and your role is {role}."},
                 {"role": "user", "content": prompt}
