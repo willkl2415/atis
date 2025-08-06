@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
-# Load environment and key
+# Load environment
 load_dotenv()
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -17,10 +17,10 @@ client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("atis")
 
-# FastAPI app
+# Init FastAPI
 app = FastAPI()
 
-# Allow frontend access
+# Enable CORS for browser access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,7 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request model
+# Request schema
 class GPTRequest(BaseModel):
     sector: str
     role: str
@@ -41,7 +41,7 @@ cache = {}
 def make_cache_key(sector, role, prompt):
     return hashlib.sha256(f"{sector}|{role}|{prompt}".encode()).hexdigest()
 
-# GPT request function
+# GPT call
 async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
     cache_key = make_cache_key(sector, role, prompt)
 
@@ -76,7 +76,7 @@ async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
         logger.error(f"OpenAI error: {e}")
         return f"Error: {str(e)}"
 
-# POST route
+# API POST
 @app.post("/generate")
 async def generate_response(request: GPTRequest):
     logger.info(f"Received request: Sector={request.sector}, Role={request.role}, Prompt={request.prompt}")
@@ -84,11 +84,11 @@ async def generate_response(request: GPTRequest):
     logger.info(f"Sending response: {reply[:100]}...")
     return {"response": reply}
 
-# GET route
+# API GET root
 @app.get("/")
 def read_root():
     return {"message": "ATIS External GPT API is running."}
 
-# Run server
+# Entry point
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
