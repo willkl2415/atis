@@ -1,22 +1,26 @@
 import os
-import openai
 import uvicorn
 import asyncio
 import hashlib
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
-# Load API key
+# Load environment and key
 load_dotenv()
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Enable logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("atis")
 
 # FastAPI app
 app = FastAPI()
 
-# CORS policy
+# Allow frontend access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,21 +35,24 @@ class GPTRequest(BaseModel):
     role: str
     prompt: str
 
-# Simple in-memory cache
+# In-memory cache
 cache = {}
 
 def make_cache_key(sector, role, prompt):
     return hashlib.sha256(f"{sector}|{role}|{prompt}".encode()).hexdigest()
 
-# GPT inference function (OpenAI v1+)
+# GPT request function
 async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
     cache_key = make_cache_key(sector, role, prompt)
+
     if cache_key in cache:
+        logger.info("Cache hit")
         return cache[cache_key]
 
     system_prompt = f"You are an AI assistant supporting someone in the '{role}' role within the '{sector}' sector. Provide clear, practical help in plain English."
 
     try:
+        logger.info("Sending prompt to OpenAI")
         response = await client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -57,23 +64,26 @@ async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
             max_tokens=512
         )
         reply = response.choices[0].message.content.strip()
-        cache[cache_key] = reply
+        logger.info("OpenAI response received")
 
-        # Limit cache to 10 items
+        cache[cache_key] = reply
         if len(cache) > 10:
             cache.pop(next(iter(cache)))
         return reply
 
     except Exception as e:
+        logger.error(f"OpenAI error: {e}")
         return f"Error: {str(e)}"
 
-# Route: POST /generate
+# POST route
 @app.post("/generate")
 async def generate_response(request: GPTRequest):
+    logger.info(f"Received request: Sector={request.sector}, Role={request.role}, Prompt={request.prompt}")
     reply = await get_gpt_response(request.sector, request.role, request.prompt)
+    logger.info(f"Sending response: {reply[:100]}...")
     return {"response": reply}
 
-# Health check
+# GET route
 @app.get("/")
 def read_root():
     return {"message": "ATIS External GPT API is running."}
