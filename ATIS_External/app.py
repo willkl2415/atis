@@ -25,15 +25,16 @@ def generate():
         if not prompt:
             return jsonify({'response': 'Prompt is required.'}), 400
 
-        response = openai.ChatCompletion.create(
+        client = openai.OpenAI()
+        chat_response = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": f"You are an AI expert in {sector} sector, acting as a {role}."},
+                {"role": "system", "content": f"You are an AI expert in {sector}, working as a {role}."},
                 {"role": "user", "content": prompt}
             ]
         )
 
-        reply = response['choices'][0]['message']['content'].strip()
+        reply = chat_response.choices[0].message.content.strip()
         return jsonify({'response': reply})
 
     except Exception as e:
