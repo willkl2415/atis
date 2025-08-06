@@ -1,10 +1,17 @@
 from flask import Flask, render_template, request, jsonify
-import openai
 import os
+import openai
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    raise ValueError("❌ OPENAI_API_KEY not found in .env file.")
+
+# Set OpenAI key using new v1.0+ method
+openai_client = openai.OpenAI(api_key=api_key)
 
 app = Flask(__name__)
 
@@ -25,22 +32,22 @@ def generate():
         if not prompt:
             return jsonify({'response': 'Prompt is required.'}), 400
 
-        client = openai.OpenAI()
-        chat_response = client.chat.completions.create(
+        # Create chat response
+        response = openai_client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": f"You are an AI expert in {sector}, working as a {role}."},
+                {"role": "system", "content": f"You are an AI assistant in the {sector} sector, performing the role of a {role}."},
                 {"role": "user", "content": prompt}
             ]
         )
 
-        reply = chat_response.choices[0].message.content.strip()
+        reply = response.choices[0].message.content.strip()
         return jsonify({'response': reply})
 
     except Exception as e:
-        print("❌ Error occurred in /generate route:\n")
-        print(f"Error code: 400 - {e}")
-        return jsonify({'response': 'Error generating response.'}), 400
+        print("❌ Error occurred in /generate route:")
+        print(e)
+        return jsonify({'response': 'Error generating response.'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
