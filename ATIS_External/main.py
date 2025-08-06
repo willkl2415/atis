@@ -61,7 +61,8 @@ async def get_gpt_response(sector: str, role: str, prompt: str) -> str:
             ],
             temperature=0.7,
             top_p=1.0,
-            max_tokens=512
+            max_tokens=512,
+            timeout=10
         )
         reply = response.choices[0].message.content.strip()
         logger.info("OpenAI response received")
