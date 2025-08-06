@@ -1,122 +1,109 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>ATIS External (GPT-4 Turbo Powered)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #ffff4d;
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
+            background-color: #ffff55;
             margin: 0;
             padding: 0;
         }
+
         .container {
-            width: 50%;
-            margin: 40px auto;
+            max-width: 600px;
             background-color: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+            margin: 60px auto;
+            border-radius: 12px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
         }
+
         h2 {
             text-align: center;
-            margin-bottom: 30px;
+            color: #111;
+            margin-bottom: 24px;
         }
+
         label {
-            font-weight: bold;
+            display: block;
+            margin-top: 16px;
+            font-weight: 600;
         }
-        select, textarea, button {
+
+        select, textarea {
             width: 100%;
-            margin: 10px 0 20px 0;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #888;
-            border-radius: 5px;
-            box-sizing: border-box;
+            padding: 12px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            resize: vertical;
         }
+
         button {
-            background-color: #2c2c84;
+            width: 100%;
+            margin-top: 24px;
+            background-color: #2c2c74;
             color: white;
-            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
             cursor: pointer;
         }
+
         button:hover {
-            background-color: #1a1a5e;
+            background-color: #1f1f5c;
         }
-        .response {
+
+        .response-box {
             margin-top: 30px;
+            background-color: #f5f5f5;
             padding: 20px;
-            border: 1px solid #888;
-            border-radius: 5px;
-            background-color: white;
-            white-space: pre-wrap;
+            border-left: 4px solid #2c2c74;
+            border-radius: 8px;
+            white-space: pre-line;
+            font-size: 15px;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>ATIS External (GPT-4 Turbo Powered)</h2>
-        <form id="prompt-form">
+        <form method="post" action="/generate">
             <label for="sector">Select Sector:</label>
-            <select id="sector" name="sector" required>
-                <option value="Defence (Training)">Defence (Training)</option>
+            <select name="sector" id="sector" required>
+                <option value="">-- Select Sector --</option>
+                <option value="Defence (Training)" {% if sector == "Defence (Training)" %}selected{% endif %}>Defence (Training)</option>
                 <option value="Education">Education</option>
                 <option value="Healthcare">Healthcare</option>
-                <option value="Technology">Technology</option>
-                <option value="Retail">Retail</option>
                 <option value="Finance">Finance</option>
-                <option value="Government">Government</option>
+                <option value="Retail">Retail</option>
             </select>
 
             <label for="role">Select Role:</label>
-            <select id="role" name="role" required>
-                <option value="Training Analyst">Training Analyst</option>
-                <option value="Training Designer">Training Designer</option>
-                <option value="Content Developer">Content Developer</option>
+            <select name="role" id="role" required>
+                <option value="">-- Select Role --</option>
+                <option value="Training Analyst" {% if role == "Training Analyst" %}selected{% endif %}>Training Analyst</option>
+                <option value="Training Designer" {% if role == "Training Designer" %}selected{% endif %}>Training Designer</option>
+                <option value="Content Developer" {% if role == "Content Developer" %}selected{% endif %}>Content Developer</option>
             </select>
 
             <label for="prompt">Enter your prompt:</label>
-            <textarea id="prompt" name="prompt" rows="5" required></textarea>
+            <textarea id="prompt" name="prompt" rows="4" required>{{ prompt or '' }}</textarea>
 
             <button type="submit">Submit</button>
         </form>
 
-        <div id="response" class="response" style="display: none;"></div>
+        {% if response %}
+        <div class="response-box">
+            {{ response }}
+        </div>
+        {% endif %}
     </div>
-
-    <script>
-        document.getElementById('prompt-form').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const prompt = document.getElementById('prompt').value.trim();
-            const sector = document.getElementById('sector').value.trim();
-            const role = document.getElementById('role').value.trim();
-
-            const responseBox = document.getElementById('response');
-            responseBox.style.display = 'none';
-            responseBox.innerText = '';
-
-            if (!prompt) {
-                alert("Please enter a prompt.");
-                return;
-            }
-
-            const response = await fetch('/generate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    prompt: prompt,
-                    sector: sector,
-                    role: role
-                })
-            });
-
-            const data = await response.json();
-            responseBox.innerText = data.response || 'No response returned.';
-            responseBox.style.display = 'block';
-        });
-    </script>
 </body>
 </html>
