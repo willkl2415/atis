@@ -73,37 +73,18 @@ const roleData = {
     ]
   },
   "Defence": {
-    "Royal Navy – Officer Roles": [
-      "Warfare Officer", "Engineering Officer", "Logistics Officer", "Medical Officer", "Dental Officer", "Chaplain"
-    ],
-    "Royal Navy – Enlisted Roles": [
-      "Marine Engineer", "Weapons Engineer", "Air Engineer", "Warfare Specialist", "Seaman Specialist", "Aircraft Handler",
-      "Aircraft Controller", "Logistics Assistant", "Medical Assistant"
-    ],
-    "British Army – Officer Roles": [
-      "Infantry Officer", "Armoured Corps Officer", "Royal Engineers Officer", "Signals Officer", "Intelligence Officer",
-      "Logistics Officer", "Medical Officer", "Dental Officer", "Veterinary Officer", "Human Resources Officer", "Legal Officer", "Chaplain"
-    ],
-    "British Army – Soldier & Specialist Roles": [
-      "Infantry Soldier", "Armoured Vehicle Operator", "Artillery Gunner", "Combat Engineer", "Cyber Warfare Specialist",
-      "Logistician", "Chef / Caterer", "Combat Medical Technician", "Military Police", "Driver", "Ammunition Technician",
-      "Electronic Warfare Operator"
-    ],
-    "Royal Air Force – Officer Roles": [
-      "Pilot", "Weapon Systems Officer", "Air Traffic Controller", "Engineer Officer", "Intelligence Officer", "Logistics Officer"
-    ],
-    "Royal Air Force – Enlisted Roles": [
-      "RAF Regiment Gunner", "Aircraft Technician", "Cyberspace Communications Specialist", "RAF Medic", "RAF Police",
-      "Physical Training Instructor", "Weapons Technician"
-    ],
-    "Strategic Command Roles": [
-      "Cyber Operations Specialist", "Intelligence Specialist", "Special Forces Operator", "Digital / IT Specialist", "Joint Operations Officer"
-    ],
-    "Royal Marines": [
-      "Royal Marines Commando", "Amphibious Warfare Specialist"
-    ],
-    "MOD Police & Civilian Roles": [
-      "MOD Police Officer", "Special Escort Group Operative", "Course Administrator", "Finance Clerk", "Project Support Officer"
-    ]
+    "Royal Navy – Officer Roles": ["Warfare Officer", "Engineering Officer", "Logistics Officer", "Medical Officer", "Dental Officer", "Chaplain"],
+    "Royal Navy – Enlisted Roles": ["Marine Engineer", "Weapons Engineer", "Air Engineer", "Warfare Specialist", "Seaman Specialist",
+      "Aircraft Handler", "Aircraft Controller", "Logistics Assistant", "Medical Assistant"],
+    "British Army – Officer Roles": ["Infantry Officer", "Armoured Corps Officer", "Royal Engineers Officer", "Signals Officer", "Intelligence Officer",
+      "Logistics Officer", "Medical Officer", "Dental Officer", "Veterinary Officer", "Human Resources Officer", "Legal Officer", "Chaplain"],
+    "British Army – Soldier & Specialist Roles": ["Infantry Soldier", "Armoured Vehicle Operator", "Artillery Gunner", "Combat Engineer", "Cyber Warfare Specialist",
+      "Logistician", "Chef / Caterer", "Combat Medical Technician", "Military Police", "Driver", "Ammunition Technician", "Electronic Warfare Operator"],
+    "Royal Air Force – Officer Roles": ["Pilot", "Weapon Systems Officer", "Air Traffic Controller", "Engineer Officer", "Intelligence Officer", "Logistics Officer"],
+    "Royal Air Force – Enlisted Roles": ["RAF Regiment Gunner", "Aircraft Technician", "Cyberspace Communications Specialist", "RAF Medic", "RAF Police",
+      "Physical Training Instructor", "Weapons Technician"],
+    "Strategic Command Roles": ["Cyber Operations Specialist", "Intelligence Specialist", "Special Forces Operator", "Digital / IT Specialist", "Joint Operations Officer"],
+    "Royal Marines": ["Royal Marines Commando", "Amphibious Warfare Specialist"],
+    "MOD Police & Civilian Roles": ["MOD Police Officer", "Special Escort Group Operative", "Course Administrator", "Finance Clerk", "Project Support Officer"]
   }
 };
