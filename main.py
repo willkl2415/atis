@@ -1,44 +1,88 @@
-# main.py
+# main.py  — ATIS Demo backend (FastAPI + OpenAI)
+# Works on Render. Expects OPENAI_API_KEY in the environment.
+
 import os
+from typing import Optional, Dict, Tuple
+from collections import OrderedDict
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from openai import OpenAI
+from pydantic import BaseModel, Field
 
-# -------- Config --------
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY is not set.")
+try:
+    from openai import OpenAI
+except Exception as e:  # pragma: no cover
+    OpenAI = None  # type: ignore
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+# -----------------------------
+# Config (env overrides allowed)
+# -----------------------------
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+MODEL = os.getenv("ATIS_MODEL", "gpt-3.5-turbo")
+TEMPERATURE = float(os.getenv("ATIS_TEMPERATURE", "0.7"))
+MAX_TOKENS = int(os.getenv("ATIS_MAX_TOKENS", "512"))
 
-# Frontend origins allowed to call this API (add more if needed)
-ALLOWED_ORIGINS = [
-    "https://willkl2415.github.io",   # GitHub Pages root
-    "https://willkl2415.github.io/atis",  # your demo path
-    "http://localhost:8002",          # local testing
-    "http://127.0.0.1:8002"
-]
-
+# -----------------------------
+# App
+# -----------------------------
 app = FastAPI(title="ATIS API", version="1.0.0")
 
+# Allow the GitHub Pages frontend to call us
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"],   # For demo; restrict to your domain in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class GenerateRequest(BaseModel):
-    sector: str
-    function: str | None = None
-    role: str
-    prompt: str
+# -----------------------------
+# OpenAI client (lazy init)
+# -----------------------------
+_client: Optional[OpenAI] = None
 
-class GenerateResponse(BaseModel):
-    response: str
+def get_client() -> OpenAI:
+    global _client
+    if not OPENAI_API_KEY:
+        raise RuntimeError("OPENAI_API_KEY is not set")
+    if _client is None:
+        _client = OpenAI(api_key=OPENAI_API_KEY)
+    return _client
 
+# -----------------------------
+# Simple in‑memory LRU cache
+# -----------------------------
+class LRU:
+    def __init__(self, capacity: int = 10):
+        self.capacity = capacity
+        self.store: OrderedDict[str, str] = OrderedDict()
+
+    def get(self, key: str) -> Optional[str]:
+        if key in self.store:
+            self.store.move_to_end(key)
+            return self.store[key]
+        return None
+
+    def set(self, key: str, value: str):
+        self.store[key] = value
+        self.store.move_to_end(key)
+        if len(self.store) > self.capacity:
+            self.store.popitem(last=False)
+
+cache = LRU(capacity=10)
+
+# -----------------------------
+# Request/Response models
+# -----------------------------
+class GenRequest(BaseModel):
+    sector: str = Field("", description="Selected sector")
+    func: str = Field("", description="Selected function")
+    role: str = Field("", description="Selected role")
+    prompt: str = Field("", description="User's question")
+
+# -----------------------------
+# Routes
+# -----------------------------
 @app.get("/")
 def root():
     return {
@@ -47,41 +91,66 @@ def root():
         "message": "Use POST /generate with { sector, function, role, prompt }."
     }
 
-@app.get("/health")
-def health():
-    return {"status": "healthy"}
+@app.get("/healthz")
+def healthz():
+    return {"ok": True}
 
-@app.post("/generate", response_model=GenerateResponse)
-def generate(req: GenerateRequest):
+# -----------------------------
+# Core generate endpoint
+# -----------------------------
+@app.post("/generate")
+def generate(req: GenRequest):
+    """
+    Returns { "text": "<model output>" }
+    (The frontend relies on the 'text' key.)
+    """
+    # Basic validation
+    if not (req.sector and req.func and req.role and req.prompt.strip()):
+        # Still return 'text' so the UI displays it
+        return {"text": "Please select sector, function, role, and enter a prompt."}
+
+    # Compose a compact, role-aware instruction to keep answers crisp and fast
+    system_msg = (
+        "You are ATIS, a real-time coaching assistant. "
+        "Give clear, practical, sector- and role-specific guidance. "
+        "Keep it concise and scannable (bullets welcome). "
+        "No markdown formatting like **bold**. No apologies. No disclaimers."
+    )
+    user_msg = (
+        f"Sector: {req.sector}\n"
+        f"Function: {req.func}\n"
+        f"Role: {req.role}\n"
+        f"Prompt: {req.prompt.strip()}\n"
+        "Respond with concrete, actionable steps the user can apply immediately."
+    )
+
+    # Cache key to speed up repeated demos
+    cache_key = f"{MODEL}|{TEMPERATURE}|{MAX_TOKENS}|{user_msg}"
+    cached = cache.get(cache_key)
+    if cached:
+        return {"text": cached}
+
+    # Guard: key missing -> friendly error for demos
+    if not OPENAI_API_KEY:
+        return {"text": "The service is not configured with an OpenAI API key."}
+
     try:
-        # System prompt keeps output clean (no markdown bold)
-        system_msg = (
-            "You are ATIS, an AI performance support assistant. "
-            "Always answer in clear plain text with short paragraphs and numbered steps when useful. "
-            "Do not use markdown formatting like **bold** or bullet symbols unless asked."
-        )
-
-        user_context = (
-            f"Sector: {req.sector}\n"
-            f"Function: {req.function or 'N/A'}\n"
-            f"Role: {req.role}\n\n"
-            f"User question: {req.prompt}"
-        )
-
-        # Light, fast model for demo (change to gpt-4o-mini / gpt-4.1 if you want)
+        client = get_client()
         completion = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=MODEL,
             messages=[
                 {"role": "system", "content": system_msg},
-                {"role": "user", "content": user_context}
+                {"role": "user", "content": user_msg},
             ],
-            temperature=0.4,
-            max_tokens=700
+            temperature=TEMPERATURE,
+            max_tokens=MAX_TOKENS,
         )
+        output = (completion.choices[0].message.content or "").strip()
+        if not output:
+            output = "No content returned from the model."
+        cache.set(cache_key, output)
+        return {"text": output}
 
-        text = completion.choices[0].message.content.strip()
-        return GenerateResponse(response=text)
     except Exception as e:
-        # Log to server console and return clean client error
-        print("ATIS API error:", e)
-        raise HTTPException(status_code=500, detail="Generation failed.")
+        # Always return a 'text' field so the UI shows something useful
+        return {"text": f"Error generating response: {str(e)}"}
