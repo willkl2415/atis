@@ -1,6 +1,7 @@
 const sectorSelect = document.getElementById("sector");
 const functionSelect = document.getElementById("function");
 const roleSelect = document.getElementById("role");
+const responseBox = document.getElementById("response");
 
 Object.keys(roleData).forEach(sector => {
   const opt = document.createElement("option");
@@ -37,9 +38,20 @@ functionSelect.addEventListener("change", () => {
 });
 
 function submitPrompt() {
-  const prompt = document.getElementById("prompt").value;
-  const role = roleSelect.value;
   const sector = sectorSelect.value;
-  const output = `Sector: ${sector}\nFunction: ${functionSelect.value}\nRole: ${role}\nPrompt: ${prompt}`;
-  document.getElementById("response").textContent = output;
+  const func = functionSelect.value;
+  const role = roleSelect.value;
+  const prompt = document.getElementById("prompt").value;
+
+  if (!sector || !func || !role || !prompt) {
+    responseBox.textContent = "Please complete all fields.";
+    return;
+  }
+
+  // Simulate AI response
+  responseBox.innerHTML = `<strong>Sector:</strong> ${sector}<br>
+    <strong>Function:</strong> ${func}<br>
+    <strong>Role:</strong> ${role}<br>
+    <strong>Prompt:</strong> ${prompt}<br><br>
+    <em>(This is a static GitHub Pages demo — AI responses not enabled.)</em>`;
 }
