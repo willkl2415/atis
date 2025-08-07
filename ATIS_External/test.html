@@ -17,7 +17,14 @@
       margin: 0 auto;
       text-align: left;
     }
-    h1 {
+    .intro {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 40px;
+    }
+    .intro h1 {
       font-size: 28px;
       font-weight: bold;
       margin-bottom: 5px;
@@ -25,7 +32,16 @@
     .strapline {
       font-style: italic;
       font-size: 16px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
+    }
+    .intro p {
+      font-size: 16px;
+      margin-bottom: 18px;
+    }
+    .intro .closing-line {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 30px;
     }
     label {
       font-weight: bold;
@@ -66,8 +82,23 @@
 <body>
 
   <div class="container">
-    <h1>ATIS (Artificial Training Intelligence System)</h1>
-    <div class="strapline">The Future of AI Human Performance Support Anytime, Anywhere</div>
+
+    <div class="intro">
+      <h1>ATIS (Artificial Training Intelligence System)</h1>
+      <div class="strapline">The Future of AI Human Performance Support Anytime, Anywhere</div>
+
+      <p><strong>Welcome to ATIS — a simple concept with mind-blowing results.</strong></p>
+
+      <p>You have a question about your work, a task, a decision, or something you're unsure about — and ATIS responds instantly with clear, helpful guidance. No setup, no jargon, no delay — just the answer you need, exactly when and where you need it.</p>
+
+      <p>Whether you're travelling, preparing for something important, solving a problem on the spot, or double-checking a detail in the moment — ATIS is always ready.</p>
+
+      <p>It's the pinnacle of in-the-moment performance support — helping you feel more confident, capable, and informed, wherever you are.</p>
+
+      <p class="closing-line">
+        ATIS isn’t just performance support — it’s the end of waiting for answers.
+      </p>
+    </div>
 
     <label for="sector">Sector</label>
     <select id="sector">
