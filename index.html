@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ATIS Demo</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -18,42 +18,40 @@
     h1 {
       font-weight: bold;
       text-align: center;
-      margin-bottom: 0.25em;
     }
     em {
-      margin-bottom: 1.5em;
+      margin-bottom: 1em;
       display: block;
       text-align: center;
     }
-    .label-bar {
+    label {
+      font-weight: bold;
+      margin-top: 1em;
+      display: block;
       width: 100%;
       max-width: 700px;
-      background-color: #FFD700;
-      padding: 0.5em;
-      font-weight: bold;
-      text-align: center;
-      border-radius: 4px 4px 0 0;
-      margin-top: 1em;
-      border: 1px solid #ccc;
-      border-bottom: none;
+      background-color: #deb62f; /* orange bar */
+      padding: 0.3em;
+      box-sizing: border-box;
     }
     select, textarea {
       width: 100%;
       max-width: 700px;
       padding: 0.5em;
       font-size: 1em;
-      border-radius: 0 0 4px 4px;
+      margin-top: 0.3em;
+      border-radius: 6px;
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
     button {
-      padding: 0.6em 1.5em;
+      padding: 0.5em 1.5em;
       font-size: 1em;
       background-color: #deb62f;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      margin: 1.5em 0;
+      margin: 1em 0;
     }
     button:disabled {
       opacity: 0.6;
@@ -69,7 +67,7 @@
       min-height: 100px;
       white-space: pre-wrap;
       line-height: 1.4;
-      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -77,22 +75,23 @@
   <h1>ATIS (Artificial Training Intelligence System)</h1>
   <em>The Future of AI Human Performance Support Anytime, Anywhere</em>
 
-  <div class="label-bar">Sector</div>
+  <label for="sector">Sector</label>
   <select id="sector"><option value="">Select a sector</option></select>
 
-  <div class="label-bar">Function</div>
+  <label for="function">Function</label>
   <select id="function"><option value="">Select a function</option></select>
 
-  <div class="label-bar">Role</div>
+  <label for="role">Role</label>
   <select id="role"><option value="">Select a role</option></select>
 
-  <div class="label-bar">Prompt</div>
+  <label for="prompt">Prompt</label>
   <textarea id="prompt" rows="5" placeholder="Write or copy and paste your question here"></textarea>
 
   <button id="submitBtn">Submit Prompt</button>
 
   <div id="response" class="response">Your response will appear here...</div>
 
+  <!-- Load roles and script -->
   <script src="roles.js"></script>
   <script>
     const API_BASE = "https://atis-api.onrender.com";
@@ -106,6 +105,7 @@
     const responseDiv = document.getElementById("response");
 
     function populateSectors() {
+      sectorSelect.innerHTML = "<option value=''>Select a sector</option>";
       window.ATIS_ROLES.forEach(sec => {
         const opt = document.createElement("option");
         opt.value = sec.sector;
