@@ -102,7 +102,7 @@
 
   <label for="sector">Sector</label>
   <select id="sector" onchange="populateFunctions()">
-    <option value="ld">Training and Learning & Development (L&D)</option>
+    <option value="Training and Learning & Development (L&D)">Training and Learning & Development (L&D)</option>
   </select>
 
   <label for="function">Function</label>
@@ -116,7 +116,7 @@
   </select>
 
   <label for="prompt">Prompt</label>
-  <textarea id="prompt" rows="5">What is the purpose of the DSAT Analysis phase?</textarea>
+  <textarea id="prompt" rows="5" placeholder="Write or copy and paste your question here"></textarea>
 
   <button onclick="submitPrompt()">Submit Prompt</button>
 
@@ -125,7 +125,7 @@
 
 <script>
   const roleData = {
-    ld: {
+    "Training and Learning & Development (L&D)": {
       "Leadership & Strategy": [
         "Chief Learning Officer (CLO)",
         "Director of Training and Development",
@@ -282,6 +282,9 @@
       responseBox.textContent = "Error: " + err.message;
     }
   }
+
+  // auto-load on page
+  window.onload = populateFunctions;
 </script>
 
 </body>
