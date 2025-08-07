@@ -18,36 +18,45 @@
     h1 {
       font-weight: bold;
       text-align: center;
+      margin-bottom: 0.25em;
     }
     em {
-      margin-bottom: 1em;
+      margin-bottom: 1.5em;
       display: block;
       text-align: center;
     }
-    label {
-      font-weight: bold;
-      margin-top: 1em;
-      display: block;
+    .label-bar {
       width: 100%;
       max-width: 700px;
+      background-color: #FFD700;
+      padding: 0.5em;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 4px 4px 0 0;
+      margin-top: 1em;
+      border: 1px solid #ccc;
+      border-bottom: none;
     }
     select, textarea {
       width: 100%;
       max-width: 700px;
       padding: 0.5em;
       font-size: 1em;
-      margin-top: 0.3em;
-      border-radius: 6px;
+      border-radius: 0 0 4px 4px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    textarea {
+      border-radius: 0 0 6px 6px;
     }
     button {
-      padding: 0.5em 1.5em;
+      padding: 0.6em 1.5em;
       font-size: 1em;
       background-color: #deb62f;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      margin: 1em 0;
+      margin: 1.5em 0;
     }
     button:disabled {
       opacity: 0.6;
@@ -63,6 +72,7 @@
       min-height: 100px;
       white-space: pre-wrap;
       line-height: 1.4;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -70,26 +80,24 @@
   <h1>ATIS (Artificial Training Intelligence System)</h1>
   <em>The Future of AI Human Performance Support Anytime, Anywhere</em>
 
-  <label for="sector">Sector</label>
+  <div class="label-bar">Sector</div>
   <select id="sector"><option value="">Select a sector</option></select>
 
-  <label for="function">Function</label>
+  <div class="label-bar">Function</div>
   <select id="function"><option value="">Select a function</option></select>
 
-  <label for="role">Role</label>
+  <div class="label-bar">Role</div>
   <select id="role"><option value="">Select a role</option></select>
 
-  <label for="prompt">Prompt</label>
+  <div class="label-bar">Prompt</div>
   <textarea id="prompt" rows="5" placeholder="Write or copy and paste your question here"></textarea>
 
   <button id="submitBtn">Submit Prompt</button>
 
   <div id="response" class="response">Your response will appear here...</div>
 
-  <!-- Load roles and script -->
   <script src="roles.js"></script>
   <script>
-    // API configuration for Render backend
     const API_BASE = "https://atis-api.onrender.com";
     const ENDPOINT = "/generate";
 
@@ -100,7 +108,6 @@
     const submitBtn = document.getElementById("submitBtn");
     const responseDiv = document.getElementById("response");
 
-    // Populate dropdowns from roles.js
     function populateSectors() {
       window.ATIS_ROLES.forEach(sec => {
         const opt = document.createElement("option");
@@ -140,7 +147,6 @@
       }
     }
 
-    // Send prompt to API
     async function submitPrompt() {
       const sector = sectorSelect.value;
       const func = functionSelect.value;
@@ -170,12 +176,10 @@
       }
     }
 
-    // Event listeners
     sectorSelect.addEventListener("change", populateFunctions);
     functionSelect.addEventListener("change", populateRoles);
     submitBtn.addEventListener("click", submitPrompt);
 
-    // Initialise
     populateSectors();
   </script>
 </body>
