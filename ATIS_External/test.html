@@ -26,7 +26,7 @@
       display: block;
       margin-top: 20px;
     }
-    textarea, input {
+    textarea, select {
       width: 100%;
       padding: 12px;
       font-size: 16px;
@@ -63,10 +63,24 @@
     <h2>ATIS External Prompt Tester</h2>
 
     <label for="sector">Sector</label>
-    <input type="text" id="sector" value="Defence (Training)">
+    <select id="sector">
+      <option>Defence (Training)</option>
+      <option>Education</option>
+      <option>Healthcare</option>
+      <option>Energy</option>
+      <option>Technology</option>
+      <option>Finance</option>
+    </select>
 
     <label for="role">Role</label>
-    <input type="text" id="role" value="Training Analyst">
+    <select id="role">
+      <option>Training Analyst</option>
+      <option>Training Designer</option>
+      <option>Content Developer</option>
+      <option>Learning Advisor</option>
+      <option>Instructor</option>
+      <option>Program Manager</option>
+    </select>
 
     <label for="prompt">Prompt</label>
     <textarea id="prompt" rows="5">What is the purpose of the DSAT Analysis phase?</textarea>
@@ -98,7 +112,8 @@
         });
 
         const data = await res.json();
-        responseBox.textContent = data.response || "No response received.";
+        const cleaned = (data.response || "").replaceAll("**", "");
+        responseBox.textContent = cleaned || "No response received.";
       } catch (err) {
         responseBox.textContent = "Error: " + err.message;
       }
