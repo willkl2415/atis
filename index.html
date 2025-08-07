@@ -1,145 +1,76 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ATIS Demo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
       background-color: #FFFF00;
       font-family: 'Roboto', sans-serif;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 2em;
     }
     h1 {
       font-weight: bold;
     }
     em {
-      display: block;
       margin-bottom: 1em;
+      display: block;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 1em;
     }
     select, textarea {
       width: 100%;
       max-width: 700px;
       padding: 0.5em;
-      margin: 0.5em 0;
       font-size: 1em;
+      margin-top: 0.3em;
     }
     button {
-      padding: 0.6em 1.5em;
+      padding: 0.5em 1.5em;
+      font-size: 1em;
       background-color: #deb62f;
       border: none;
       cursor: pointer;
-      font-size: 1em;
-      margin-top: 1em;
+      margin: 1em 0;
     }
     .response {
-      margin-top: 2em;
-      padding: 1em;
-      background: #fff;
-      border-radius: 5px;
-      width: 100%;
+      background-color: white;
       max-width: 700px;
-      min-height: 80px;
-      font-size: 0.95em;
-      box-sizing: border-box;
-      margin-left: auto;
-      margin-right: auto;
+      padding: 1em;
+      border-radius: 8px;
+      margin-top: 1em;
     }
   </style>
 </head>
 <body>
-
   <h1>ATIS (Artificial Training Intelligence System)</h1>
   <em>The Future of AI Human Performance Support Anytime, Anywhere</em>
 
-  <p><strong>Welcome to ATIS — a simple concept with mind-blowing results.</strong></p>
-  <p>You have a question about your work, a task, a decision, or something you're unsure about — and ATIS responds with clear, helpful guidance instantly. There’s no setup, no jargon, and no delay — just the answer you need, exactly when and where you need it.</p>
-  <p>Whether you're travelling to an event, preparing for something important, solving a problem on the spot, or double-checking a detail in the moment — ATIS is always ready.</p>
-  <p>It’s the pinnacle of in-the-moment performance support — helping you feel more confident, capable, and informed, wherever you are.</p>
-  <p><strong>ATIS isn’t just performance support — it’s the end of waiting for answers.</strong></p>
+  <label for="sector">Sector</label>
+  <select id="sector"><option value="">Select a sector</option></select>
 
-  <label for="sector">Sector</label><br>
-  <select id="sector">
-    <option value="">Select a sector</option>
-  </select><br>
+  <label for="function">Function</label>
+  <select id="function"><option value="">Select a function</option></select>
 
-  <label for="function">Function</label><br>
-  <select id="function">
-    <option value="">Select a function</option>
-  </select><br>
+  <label for="role">Role</label>
+  <select id="role"><option value="">Select a role</option></select>
 
-  <label for="role">Role</label><br>
-  <select id="role">
-    <option value="">Select a role</option>
-  </select><br>
-
-  <label for="prompt">Prompt</label><br>
-  <textarea id="prompt" rows="5" placeholder="Write or copy and paste your question here"></textarea><br>
+  <label for="prompt">Prompt</label>
+  <textarea id="prompt" rows="5" placeholder="Write or copy and paste your question here"></textarea>
 
   <button onclick="submitPrompt()">Submit Prompt</button>
 
   <div id="response" class="response"></div>
 
-  <!-- Load roles.js with cache-busting version -->
-  <script src="roles.js?v=3"></script>
-  <script>
-    const sectorSelect = document.getElementById("sector");
-    const functionSelect = document.getElementById("function");
-    const roleSelect = document.getElementById("role");
-    const responseBox = document.getElementById("response");
-
-    // Populate sectors
-    Object.keys(roleData).forEach(sector => {
-      const opt = document.createElement("option");
-      opt.value = sector;
-      opt.textContent = sector;
-      sectorSelect.appendChild(opt);
-    });
-
-    // On sector change, populate functions
-    sectorSelect.addEventListener("change", () => {
-      functionSelect.innerHTML = '<option value="">Select a function</option>';
-      roleSelect.innerHTML = '<option value="">Select a role</option>';
-      const functions = roleData[sectorSelect.value];
-      if (functions) {
-        Object.keys(functions).forEach(func => {
-          const opt = document.createElement("option");
-          opt.value = func;
-          opt.textContent = func;
-          functionSelect.appendChild(opt);
-        });
-      }
-    });
-
-    // On function change, populate roles
-    functionSelect.addEventListener("change", () => {
-      roleSelect.innerHTML = '<option value="">Select a role</option>';
-      const roles = roleData[sectorSelect.value]?.[functionSelect.value];
-      if (roles) {
-        roles.forEach(role => {
-          const opt = document.createElement("option");
-          opt.value = role;
-          opt.textContent = role;
-          roleSelect.appendChild(opt);
-        });
-      }
-    });
-
-    // Display formatted summary (mock version for demo)
-    function submitPrompt() {
-      const sector = sectorSelect.value;
-      const func = functionSelect.value;
-      const role = roleSelect.value;
-      const prompt = document.getElementById("prompt").value;
-      if (!sector || !func || !role || !prompt) {
-        responseBox.textContent = "Please complete all fields before submitting.";
-        return;
-      }
-
-      responseBox.textContent = `Sector: ${sector} \nFunction: ${func} \nRole: ${role} \nPrompt: ${prompt}`;
-    }
-  </script>
+  <script src="roles.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
