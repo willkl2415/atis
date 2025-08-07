@@ -1,129 +1,92 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ATIS External Test</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #FFFF00;
-      margin: 0;
-      padding: 40px 0;
-    }
-    .container {
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto;
-      text-align: left;
-    }
-    .intro {
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-bottom: 40px;
-    }
-    .intro h1 {
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    .strapline {
-      font-style: italic;
-      font-size: 16px;
-      margin-bottom: 25px;
-    }
-    .intro p {
-      font-size: 16px;
-      margin-bottom: 18px;
-    }
-    .intro .closing-line {
-      font-weight: bold;
-      font-size: 18px;
-      margin-top: 30px;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 20px;
-    }
-    select, textarea {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      margin-top: 5px;
-      border: 1px solid #bbb;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 20px;
-      margin-bottom: 30px;
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #f1c40f;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #d4ac0d;
-    }
-    #response {
-      background-color: #fffff0;
-      border: 1px solid #ccc;
-      padding: 24px;
-      border-radius: 6px;
-      white-space: pre-wrap;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATIS External Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #FFFF00;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 2em;
+        }
+        h1 {
+            font-weight: bold;
+        }
+        em {
+            display: block;
+            margin-bottom: 1em;
+        }
+        select, textarea, input[type="text"] {
+            width: 100%;
+            max-width: 700px;
+            padding: 0.5em;
+            margin: 0.5em 0;
+            font-size: 1em;
+        }
+        button {
+            padding: 0.5em 1em;
+            background-color: #deb62f;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 1em;
+        }
+        .response {
+            max-width: 700px;
+            background-color: white;
+            padding: 1em;
+            margin-top: 1em;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-
-<div class="container">
-
-  <div class="intro">
     <h1>ATIS (Artificial Training Intelligence System)</h1>
-    <div class="strapline">The Future of AI Human Performance Support Anytime, Anywhere</div>
+    <em>The Future of AI Human Performance Support Anytime, Anywhere</em>
 
     <p><strong>Welcome to ATIS — a simple concept with mind-blowing results.</strong></p>
-
-    <p>You have a question about your work, a task, a decision, or something you're unsure about — and ATIS responds instantly with clear, helpful guidance. No setup, no jargon, no delay — just the answer you need, exactly when and where you need it.</p>
-
-    <p>Whether you're travelling, preparing for something important, solving a problem on the spot, or double-checking a detail in the moment — ATIS is always ready.</p>
-
-    <p>It's the pinnacle of in-the-moment performance support — helping you feel more confident, capable, and informed, wherever you are.</p>
-
-    <p class="closing-line">
-      ATIS isn’t just performance support — it’s the end of waiting for answers.
+    <p>
+        You have a question about your work, a task, a decision, or something you're unsure about — and ATIS responds with clear, helpful guidance instantly.
+        There’s no setup, no jargon, and no delay — just the answer you need, exactly when and where you need it.
     </p>
-  </div>
+    <p>
+        Whether you're travelling to an event, preparing for something important, solving a problem on the spot, or double-checking a detail in the moment — ATIS is always ready.
+    </p>
+    <p>
+        It’s the pinnacle of in-the-moment performance support — helping you feel more confident, capable, and informed, wherever you are.
+    </p>
+    <p><strong>ATIS isn’t just performance support — it’s the end of waiting for answers.</strong></p>
 
-  <label for="sector">Sector</label>
-  <select id="sector" onchange="populateFunctions()">
-    <option value="">Select a sector</option>
-  </select>
+    <label for="sector">Sector</label>
+    <select id="sector">
+        <option value="">Select a sector</option>
+    </select>
 
-  <label for="function">Function</label>
-  <select id="function" onchange="populateRoles()">
-    <option value="">Select a function</option>
-  </select>
+    <label for="function">Function</label>
+    <select id="function">
+        <option value="">Select a function</option>
+    </select>
 
-  <label for="role">Role</label>
-  <select id="role">
-    <option value="">Select a role</option>
-  </select>
+    <label for="role">Role</label>
+    <select id="role">
+        <option value="">Select a role</option>
+    </select>
 
-  <label for="prompt">Prompt</label>
-  <textarea id="prompt" rows="5" placeholder="Write or copy and paste your question here"></textarea>
+    <label for="prompt">Prompt</label>
+    <textarea id="prompt" rows="5" placeholder="Write or copy and paste your question here"></textarea>
 
-  <button onclick="submitPrompt()">Submit Prompt</button>
+    <button onclick="submitPrompt()">Submit Prompt</button>
 
-  <div id="response"></div>
-</div>
+    <div id="response" class="response"></div>
 
-<script>
+   <script>
   const roleData =
 
   const roleData = {
@@ -563,81 +526,60 @@
         "Finance Clerk",
         "Recruitment and Marketing Officer",
         "Course Administrator"
-      ]
-    },
-  function populateFunctions() {
-    const sector = document.getElementById("sector").value;
-    const functionDropdown = document.getElementById("function");
-    const roleDropdown = document.getElementById("role");
 
-    functionDropdown.innerHTML = '<option value="">Select a function</option>';
-    roleDropdown.innerHTML = '<option value="">Select a role</option>';
+        const sectorSelect = document.getElementById("sector");
+        const functionSelect = document.getElementById("function");
+        const roleSelect = document.getElementById("role");
 
-    if (roleData[sector]) {
-      for (const func in roleData[sector]) {
-        const opt = document.createElement("option");
-        opt.value = func;
-        opt.textContent = func;
-        functionDropdown.appendChild(opt);
-      }
-    }
-  }
+        Object.keys(hierarchy).forEach(sector => {
+            const opt = document.createElement("option");
+            opt.value = opt.textContent = sector;
+            sectorSelect.appendChild(opt);
+        });
 
-  function populateRoles() {
-    const sector = document.getElementById("sector").value;
-    const selectedFunction = document.getElementById("function").value;
-    const roleDropdown = document.getElementById("role");
+        sectorSelect.addEventListener("change", () => {
+            functionSelect.innerHTML = '<option value="">Select a function</option>';
+            roleSelect.innerHTML = '<option value="">Select a role</option>';
+            const functions = hierarchy[sectorSelect.value];
+            if (functions) {
+                Object.keys(functions).forEach(fn => {
+                    const opt = document.createElement("option");
+                    opt.value = opt.textContent = fn;
+                    functionSelect.appendChild(opt);
+                });
+            }
+        });
 
-    roleDropdown.innerHTML = '<option value="">Select a role</option>';
+        functionSelect.addEventListener("change", () => {
+            roleSelect.innerHTML = '<option value="">Select a role</option>';
+            const roles = hierarchy[sectorSelect.value]?.[functionSelect.value];
+            if (roles) {
+                roles.forEach(role => {
+                    const opt = document.createElement("option");
+                    opt.value = opt.textContent = role;
+                    roleSelect.appendChild(opt);
+                });
+            }
+        });
 
-    if (roleData[sector] && roleData[sector][selectedFunction]) {
-      roleData[sector][selectedFunction].forEach(role => {
-        const opt = document.createElement("option");
-        opt.value = role;
-        opt.textContent = role;
-        roleDropdown.appendChild(opt);
-      });
-    }
-  }
-
-  async function submitPrompt() {
-    const sector = document.getElementById("sector").value;
-    const role = document.getElementById("role").value;
-    const prompt = document.getElementById("prompt").value;
-    const responseBox = document.getElementById("response");
-
-    if (!sector || !role || !prompt) {
-      responseBox.textContent = "Please fill in all fields before submitting.";
-      return;
-    }
-
-    responseBox.textContent = "Thinking...";
-
-    try {
-      const res = await fetch("/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sector, role, prompt })
-      });
-
-      const data = await res.json();
-      const cleaned = (data.response || "").replaceAll("**", "");
-      responseBox.textContent = cleaned || "No response received.";
-    } catch (err) {
-      responseBox.textContent = "Error: " + err.message;
-    }
-  }
-
-  window.onload = function () {
-    const sectorDropdown = document.getElementById("sector");
-    for (const sector in roleData) {
-      const opt = document.createElement("option");
-      opt.value = sector;
-      opt.textContent = sector;
-      sectorDropdown.appendChild(opt);
-    }
-  };
-</script>
+        function submitPrompt() {
+            const prompt = document.getElementById("prompt").value;
+            const role = roleSelect.value;
+            const sector = sectorSelect.value;
+            if (!prompt || !role || !sector) return;
+            fetch("http://127.0.0.1:8002/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sector, role, prompt })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("response").textContent = data.response || "No response found.";
+            })
+            .catch(() => {
+                document.getElementById("response").textContent = "Error: Failed to fetch response.";
+            });
+        }
+    </script>
 </body>
 </html>
-
