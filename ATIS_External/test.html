@@ -7,13 +7,19 @@
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background-color: #fff8dc;
-      padding: 40px;
-      color: #333;
+      background-color: #FFFF00;
+      margin: 0;
+      padding: 40px 0;
+    }
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: left;
     }
     h2 {
-      margin-bottom: 30px;
       font-size: 28px;
+      margin-bottom: 30px;
     }
     label {
       font-weight: bold;
@@ -22,16 +28,16 @@
     }
     textarea, input {
       width: 100%;
-      max-width: 700px;
       padding: 12px;
-      margin-top: 5px;
       font-size: 16px;
+      margin-top: 5px;
       border: 1px solid #bbb;
       border-radius: 6px;
       box-sizing: border-box;
     }
     button {
-      margin-top: 25px;
+      margin-top: 20px;
+      margin-bottom: 30px;
       padding: 12px 24px;
       font-size: 16px;
       background-color: #f1c40f;
@@ -43,33 +49,32 @@
       background-color: #d4ac0d;
     }
     #response {
-      margin-top: 35px;
       background-color: #fffff0;
       border: 1px solid #ccc;
       padding: 24px;
-      width: 100%;
-      max-width: 1000px;
-      white-space: pre-wrap;
       border-radius: 6px;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
 
-  <h2>ATIS External Prompt Tester</h2>
+  <div class="container">
+    <h2>ATIS External Prompt Tester</h2>
 
-  <label for="sector">Sector</label>
-  <input type="text" id="sector" value="Defence (Training)">
+    <label for="sector">Sector</label>
+    <input type="text" id="sector" value="Defence (Training)">
 
-  <label for="role">Role</label>
-  <input type="text" id="role" value="Training Analyst">
+    <label for="role">Role</label>
+    <input type="text" id="role" value="Training Analyst">
 
-  <label for="prompt">Prompt</label>
-  <textarea id="prompt" rows="5">What is the purpose of the DSAT Analysis phase?</textarea>
+    <label for="prompt">Prompt</label>
+    <textarea id="prompt" rows="5">What is the purpose of the DSAT Analysis phase?</textarea>
 
-  <button onclick="submitPrompt()">Submit Prompt</button>
+    <button onclick="submitPrompt()">Submit Prompt</button>
 
-  <div id="response"></div>
+    <div id="response"></div>
+  </div>
 
   <script>
     async function submitPrompt() {
