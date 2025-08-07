@@ -102,7 +102,7 @@
 
   <label for="sector">Sector</label>
   <select id="sector" onchange="populateFunctions()">
-    <option value="Training and Learning & Development (L&D)">Training and Learning & Development (L&D)</option>
+    <option value="">Select a sector</option>
   </select>
 
   <label for="function">Function</label>
@@ -124,6 +124,8 @@
 </div>
 
 <script>
+  const roleData =
+
   const roleData = {
     "Training and Learning & Development (L&D)": {
       "Leadership & Strategy": [
@@ -217,9 +219,352 @@
         "Learning Delivery Assistant",
         "Junior L&D Consultant"
       ]
-    }
-  };
-
+    },
+    "Manufacturing & Operations": {
+      "Production and Operations": [
+        "Manufacturing Team Member / Production Operative",
+        "Machine Operator",
+        "Assembler",
+        "Fabricator",
+        "Welder",
+        "Production Supervisor / Team Leader",
+        "Production Planner / Scheduler"
+      ],
+      "Engineering and Technical Roles": [
+        "Manufacturing Engineer",
+        "Process Engineer",
+        "Design Engineer",
+        "Automation Engineer",
+        "Robotics Engineer",
+        "Robotics Technician",
+        "Maintenance Engineer",
+        "Maintenance Technician",
+        "CNC Machinist",
+        "CNC Operator",
+        "Industrial Engineering Technician"
+      ],
+      "Quality Control and Assurance": [
+        "Quality Control Inspector",
+        "Quality Engineer",
+        "Quality Manager"
+      ],
+      "Supply Chain and Logistics": [
+        "Material Handler",
+        "Inventory Manager",
+        "Supply Chain Manager",
+        "Logistician"
+      ],
+      "Management and Administration": [
+        "Plant Manager",
+        "Operations Manager",
+        "Manufacturing Manager"
+      ],
+      "Corporate Functions": [
+        "Health & Safety Officer",
+        "Health & Safety Manager",
+        "Human Resources / Personnel",
+        "Finance / Accounting",
+        "Purchasing / Procurement",
+        "R&D Engineer",
+        "R&D Manager",
+        "Sustainability Manager"
+      ]
+    },
+    "Education": {
+      "Teaching & Academic Roles": [
+        "Teacher (School Teacher)",
+        "University Lecturer",
+        "Professor",
+        "Teaching Assistant (TA)",
+        "Special Educational Needs Coordinator (SENCO)",
+        "Cover Supervisor",
+        "Substitute Teacher / Supply Teacher",
+        "Academic Mentor",
+        "Private Tutor",
+        "Sports Coach"
+      ],
+      "Leadership and Administration": [
+        "Headteacher / Principal",
+        "Deputy Headteacher",
+        "Assistant Headteacher",
+        "School Business Manager",
+        "School Governor"
+      ],
+      "Administrative Support": [
+        "Administrative Staff",
+        "Academic Registrar",
+        "Course Administrator",
+        "Data and Assessment Manager"
+      ]
+    },
+    "Defence": {
+      "Royal Navy – Officer Roles": [
+        "Warfare Officer",
+        "Engineering Officer",
+        "Logistics Officer",
+        "Medical Officer",
+        "Dental Officer",
+        "Chaplain"
+      ],
+      "Royal Navy – Enlisted Roles": [
+        "Marine Engineer",
+        "Weapons Engineer",
+        "Air Engineer",
+        "Warfare Specialist",
+        "Seaman Specialist",
+        "Aircraft Handler",
+        "Aircraft Controller",
+        "Logistics Assistant",
+        "Medical Assistant"
+      ],
+      "British Army – Officer Roles": [
+        "Infantry Officer",
+        "Armoured Corps Officer",
+        "Royal Engineers Officer",
+        "Signals Officer",
+        "Intelligence Officer",
+        "Logistics Officer",
+        "Medical Officer",
+        "Dental Officer",
+        "Veterinary Officer",
+        "Human Resources Officer",
+        "Legal Officer",
+        "Chaplain"
+      ],
+      "British Army – Soldier & Specialist Roles": [
+        "Infantry Soldier",
+        "Armoured Vehicle Operator",
+        "Army Air Corps Ground Crew",
+        "Artillery Gunner (Royal Artillery)",
+        "Combat Engineer",
+        "Geospatial Intelligence Specialist",
+        "Explosive Ordnance Disposal (EOD) Specialist",
+        "Transport Operator",
+        "Communications Operator",
+        "Cyber Warfare Specialist",
+        "Intelligence Analyst",
+        "Logistician",
+        "Chef / Caterer",
+        "Maritime Operator",
+        "Equipment Technician",
+        "Combat Medical Technician",
+        "Biomedical Scientist",
+        "Military Police",
+        "Driver",
+        "Logistic Supply Specialist",
+        "Petroleum Operator",
+        "Movement Controller",
+        "Driver Communications Specialist",
+        "Port Operator",
+        "Postal and Courier Operator",
+        "Ammunition Technician",
+        "Operational Hygiene Specialist",
+        "Army Diver",
+        "Army Photographer",
+        "Systems Analyst",
+        "Electronic Warfare & Signals Intelligence Operator",
+        "Cyber Networks Engineer",
+        "Cyber Infrastructure Engineer",
+        "Power Engineer"
+      ],
+      "Royal Air Force – Officer Roles": [
+        "Pilot",
+        "Weapon Systems Officer",
+        "Air Traffic Controller",
+        "Aerosystems Engineer Officer",
+        "Communications Electronics Engineer Officer",
+        "Intelligence Officer",
+        "Logistics Officer",
+        "Medical Officer",
+        "Legal Officer",
+        "Human Resources Officer",
+        "Media Operations Officer",
+        "RAF Regiment Officer",
+        "Chaplain"
+      ],
+      "Royal Air Force – Enlisted Roles": [
+        "RAF Regiment Gunner",
+        "Aircraft Technician",
+        "Cyberspace Communications Specialist",
+        "Intelligence Analyst",
+        "Linguist",
+        "Logistician",
+        "RAF Medic",
+        "RAF Police",
+        "Physical Training Instructor",
+        "Survival Equipment Specialist",
+        "Weapons Technician",
+        "Chef",
+        "Photographer",
+        "Musician"
+      ],
+      "Strategic Command Roles": [
+        "Cyber Operations Specialist",
+        "Intelligence Specialist",
+        "Special Forces Operator",
+        "Logistics Specialist",
+        "Digital / IT Specialist",
+        "Defence Medical Services Personnel",
+        "Training Specialist",
+        "Joint Operations Officer",
+        "Director Special Forces",
+        "Defence Intelligence Officer",
+        "Cyber Intelligence Integration Officer"
+      ],
+      "Royal Marines": [
+        "Royal Marines Commando",
+        "Amphibious Warfare Specialist",
+        "Mine Warfare Specialist",
+        "Submarine Operations Specialist"
+      ],
+      "MOD Police & Civilian Roles": [
+        "Ministry of Defence Police (MDP) Officer",
+        "Special Escort Group (SEG) Operative",
+        "Personal Secretary",
+        "Pay Clerk",
+        "Commercial Officer",
+        "Commodity Manager",
+        "Project Support Officer",
+        "Administrative Support Officer",
+        "Finance Clerk",
+        "Recruitment and Marketing Officer",
+        "Course Administrator"
+      ]
+    },
+    "Defence": {
+      "Royal Navy – Officer Roles": [
+        "Warfare Officer",
+        "Engineering Officer",
+        "Logistics Officer",
+        "Medical Officer",
+        "Dental Officer",
+        "Chaplain"
+      ],
+      "Royal Navy – Enlisted Roles": [
+        "Marine Engineer",
+        "Weapons Engineer",
+        "Air Engineer",
+        "Warfare Specialist",
+        "Seaman Specialist",
+        "Aircraft Handler",
+        "Aircraft Controller",
+        "Logistics Assistant",
+        "Medical Assistant"
+      ],
+      "British Army – Officer Roles": [
+        "Infantry Officer",
+        "Armoured Corps Officer",
+        "Royal Engineers Officer",
+        "Signals Officer",
+        "Intelligence Officer",
+        "Logistics Officer",
+        "Medical Officer",
+        "Dental Officer",
+        "Veterinary Officer",
+        "Human Resources Officer",
+        "Legal Officer",
+        "Chaplain"
+      ],
+      "British Army – Soldier & Specialist Roles": [
+        "Infantry Soldier",
+        "Armoured Vehicle Operator",
+        "Army Air Corps Ground Crew",
+        "Artillery Gunner (Royal Artillery)",
+        "Combat Engineer",
+        "Geospatial Intelligence Specialist",
+        "Explosive Ordnance Disposal (EOD) Specialist",
+        "Transport Operator",
+        "Communications Operator",
+        "Cyber Warfare Specialist",
+        "Intelligence Analyst",
+        "Logistician",
+        "Chef / Caterer",
+        "Maritime Operator",
+        "Equipment Technician",
+        "Combat Medical Technician",
+        "Biomedical Scientist",
+        "Military Police",
+        "Driver",
+        "Logistic Supply Specialist",
+        "Petroleum Operator",
+        "Movement Controller",
+        "Driver Communications Specialist",
+        "Port Operator",
+        "Postal and Courier Operator",
+        "Ammunition Technician",
+        "Operational Hygiene Specialist",
+        "Army Diver",
+        "Army Photographer",
+        "Systems Analyst",
+        "Electronic Warfare & Signals Intelligence Operator",
+        "Cyber Networks Engineer",
+        "Cyber Infrastructure Engineer",
+        "Power Engineer"
+      ],
+      "Royal Air Force – Officer Roles": [
+        "Pilot",
+        "Weapon Systems Officer",
+        "Air Traffic Controller",
+        "Aerosystems Engineer Officer",
+        "Communications Electronics Engineer Officer",
+        "Intelligence Officer",
+        "Logistics Officer",
+        "Medical Officer",
+        "Legal Officer",
+        "Human Resources Officer",
+        "Media Operations Officer",
+        "RAF Regiment Officer",
+        "Chaplain"
+      ],
+      "Royal Air Force – Enlisted Roles": [
+        "RAF Regiment Gunner",
+        "Aircraft Technician",
+        "Cyberspace Communications Specialist",
+        "Intelligence Analyst",
+        "Linguist",
+        "Logistician",
+        "RAF Medic",
+        "RAF Police",
+        "Physical Training Instructor",
+        "Survival Equipment Specialist",
+        "Weapons Technician",
+        "Chef",
+        "Photographer",
+        "Musician"
+      ],
+      "Strategic Command Roles": [
+        "Cyber Operations Specialist",
+        "Intelligence Specialist",
+        "Special Forces Operator",
+        "Logistics Specialist",
+        "Digital / IT Specialist",
+        "Defence Medical Services Personnel",
+        "Training Specialist",
+        "Joint Operations Officer",
+        "Director Special Forces",
+        "Defence Intelligence Officer",
+        "Cyber Intelligence Integration Officer"
+      ],
+      "Royal Marines": [
+        "Royal Marines Commando",
+        "Amphibious Warfare Specialist",
+        "Mine Warfare Specialist",
+        "Submarine Operations Specialist"
+      ],
+      "MOD Police & Civilian Roles": [
+        "Ministry of Defence Police (MDP) Officer",
+        "Special Escort Group (SEG) Operative",
+        "Personal Secretary",
+        "Pay Clerk",
+        "Commercial Officer",
+        "Commodity Manager",
+        "Project Support Officer",
+        "Administrative Support Officer",
+        "Finance Clerk",
+        "Recruitment and Marketing Officer",
+        "Course Administrator"
+      ]
+    },
   function populateFunctions() {
     const sector = document.getElementById("sector").value;
     const functionDropdown = document.getElementById("function");
@@ -283,9 +628,16 @@
     }
   }
 
-  // auto-load on page
-  window.onload = populateFunctions;
+  window.onload = function () {
+    const sectorDropdown = document.getElementById("sector");
+    for (const sector in roleData) {
+      const opt = document.createElement("option");
+      opt.value = sector;
+      opt.textContent = sector;
+      sectorDropdown.appendChild(opt);
+    }
+  };
 </script>
-
 </body>
 </html>
+
