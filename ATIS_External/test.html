@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,7 +23,7 @@
       display: block;
       margin-bottom: 1em;
     }
-    select, textarea {
+    select, textarea, input[type="text"] {
       width: 100%;
       max-width: 700px;
       padding: 0.5em;
@@ -39,6 +40,7 @@
     }
     .response {
       max-width: 700px;
+      min-height: 100px;
       background-color: white;
       padding: 1em;
       margin-top: 1em;
@@ -78,10 +80,7 @@
 
   <div id="response" class="response"></div>
 
-  <!-- Load the roles first -->
   <script src="roles.js"></script>
-
-  <!-- Then load the UI logic -->
   <script>
     const sectorSelect = document.getElementById("sector");
     const functionSelect = document.getElementById("function");
