@@ -48,7 +48,7 @@
       display: block;
       margin-top: 20px;
     }
-    select, textarea, input {
+    select, textarea {
       width: 100%;
       padding: 12px;
       font-size: 16px;
@@ -56,24 +56,6 @@
       border: 1px solid #bbb;
       border-radius: 6px;
       box-sizing: border-box;
-    }
-    #role-results {
-      background: #fff;
-      border: 1px solid #ccc;
-      max-height: 180px;
-      overflow-y: auto;
-      margin-top: 0;
-      display: none;
-      position: absolute;
-      z-index: 1;
-      width: calc(100% - 24px);
-    }
-    #role-results div {
-      padding: 10px;
-      cursor: pointer;
-    }
-    #role-results div:hover {
-      background-color: #f1c40f;
     }
     button {
       margin-top: 20px;
@@ -94,9 +76,6 @@
       padding: 24px;
       border-radius: 6px;
       white-space: pre-wrap;
-    }
-    .role-container {
-      position: relative;
     }
   </style>
 </head>
@@ -122,19 +101,19 @@
   </div>
 
   <label for="sector">Sector</label>
-  <select id="sector" onchange="clearRole()">
-    <option value="defence">Defence</option>
-    <option value="education">Education</option>
-    <option value="healthcare">Healthcare</option>
-    <option value="retail">Retail</option>
-    <option value="government">Government</option>
+  <select id="sector" onchange="populateFunctions()">
+    <option value="ld">Training and Learning & Development (L&D)</option>
+  </select>
+
+  <label for="function">Function</label>
+  <select id="function" onchange="populateRoles()">
+    <option value="">Select a function</option>
   </select>
 
   <label for="role">Role</label>
-  <div class="role-container">
-    <input type="text" id="role" placeholder="Type to search for a role..." oninput="filterRoles()" autocomplete="off">
-    <div id="role-results"></div>
-  </div>
+  <select id="role">
+    <option value="">Select a role</option>
+  </select>
 
   <label for="prompt">Prompt</label>
   <textarea id="prompt" rows="5">What is the purpose of the DSAT Analysis phase?</textarea>
@@ -145,61 +124,141 @@
 </div>
 
 <script>
-  const rolesBySector = {
-    defence: [
-      "Infantry Officer", "Cyber Warfare Specialist", "Training Specialist",
-      "Pilot", "RAF Medic", "Logistics Officer"
-    ],
-    education: [
-      "Teacher", "Headteacher", "Academic Registrar", "Lecturer", "TA", "Professor"
-    ],
-    healthcare: [
-      "Nurse", "Physiotherapist", "Healthcare Assistant", "Paramedic", "Doctor"
-    ],
-    retail: [
-      "Store Manager", "Sales Associate", "Cashier", "Visual Merchandiser"
-    ],
-    government: [
-      "Policy Officer", "Civil Servant", "Local Government Officer", "Border Force Officer"
-    ]
+  const roleData = {
+    ld: {
+      "Leadership & Strategy": [
+        "Chief Learning Officer (CLO)",
+        "Director of Training and Development",
+        "Vice President (VP) of Learning & Development",
+        "Head of Learning & Development",
+        "Learning and Development Manager",
+        "Training Manager",
+        "Director of Knowledge & Learning",
+        "Talent Development Manager",
+        "Training Program Manager",
+        "Leadership Development Specialist"
+      ],
+      "Program Design & Development": [
+        "Instructional Designer",
+        "Senior Instructional Designer",
+        "Instructional Design Manager",
+        "Curriculum Designer",
+        "Curriculum Manager",
+        "Curriculum Consultant",
+        "Content Developer",
+        "Content Curator",
+        "Digital Learning Designer",
+        "eLearning Developer",
+        "eLearning Manager",
+        "Learning Architect",
+        "Learning Strategist",
+        "Learning Experience Designer",
+        "Learning Technologist",
+        "Instructional Technologist"
+      ],
+      "Training Delivery & Facilitation": [
+        "Corporate Trainer",
+        "Senior Trainer",
+        "Training Facilitator",
+        "Technical Trainer",
+        "IT Trainer",
+        "Sales Trainer",
+        "Customer Service Trainer",
+        "Onboarding Trainer",
+        "Subject Matter Expert / Trainer",
+        "Apprenticeship Trainer",
+        "Training Instructor",
+        "Learning Coach",
+        "Employee Development Coach"
+      ],
+      "Coordination, Analysis & Support": [
+        "Learning and Development Coordinator",
+        "Training Coordinator",
+        "L&D Administrator",
+        "Training Assistant",
+        "Learning & Development Assistant",
+        "Learning Systems Coordinator",
+        "LMS Administrator (Learning Management System)",
+        "Learning & Development Analyst",
+        "Workforce Development Coordinator",
+        "L&D Project Coordinator",
+        "Development Administrator",
+        "Program Editor"
+      ],
+      "Specialist & Consulting Roles": [
+        "Learning and Development Business Partner",
+        "Learning and Development Consultant",
+        "Organizational Development Specialist",
+        "Performance Consultant",
+        "Capability Consultant",
+        "People Development Partner",
+        "Culture and Engagement Consultant"
+      ],
+      "Emerging Roles & Niche Specialisms": [
+        "Personal Learning Experience Designer",
+        "Learning AI Specialist",
+        "Hybrid L&D Facilitator",
+        "Talent Development Specialist",
+        "Digital Learning Transformation Lead",
+        "Knowledge Manager",
+        "Learning Product Owner",
+        "Learning Operations Lead",
+        "Skills Development Partner",
+        "Competency Framework Specialist",
+        "Digital Learning Experience Manager",
+        "Learning Innovation Lead"
+      ],
+      "Entry-Level Roles": [
+        "Training Administrator",
+        "L&D Intern",
+        "Junior Instructional Designer",
+        "Assistant Trainer",
+        "Training Support Officer",
+        "Learning Delivery Assistant",
+        "Junior L&D Consultant"
+      ]
+    }
   };
 
-  function clearRole() {
-    document.getElementById("role").value = "";
-    document.getElementById("role-results").style.display = "none";
-  }
-
-  function filterRoles() {
+  function populateFunctions() {
     const sector = document.getElementById("sector").value;
-    const input = document.getElementById("role").value.toLowerCase();
-    const resultsBox = document.getElementById("role-results");
+    const functionDropdown = document.getElementById("function");
+    const roleDropdown = document.getElementById("role");
 
-    if (!rolesBySector[sector] || input.length === 0) {
-      resultsBox.style.display = "none";
-      return;
+    functionDropdown.innerHTML = '<option value="">Select a function</option>';
+    roleDropdown.innerHTML = '<option value="">Select a role</option>';
+
+    if (roleData[sector]) {
+      for (const func in roleData[sector]) {
+        const opt = document.createElement("option");
+        opt.value = func;
+        opt.textContent = func;
+        functionDropdown.appendChild(opt);
+      }
     }
-
-    const matches = rolesBySector[sector].filter(role => role.toLowerCase().includes(input));
-    if (matches.length === 0) {
-      resultsBox.style.display = "none";
-      return;
-    }
-
-    resultsBox.innerHTML = matches.map(role =>
-      `<div onclick="selectRole('${role}')">${role}</div>`
-    ).join('');
-    resultsBox.style.display = "block";
   }
 
-  function selectRole(role) {
-    document.getElementById("role").value = role;
-    document.getElementById("role-results").style.display = "none";
+  function populateRoles() {
+    const sector = document.getElementById("sector").value;
+    const selectedFunction = document.getElementById("function").value;
+    const roleDropdown = document.getElementById("role");
+
+    roleDropdown.innerHTML = '<option value="">Select a role</option>';
+
+    if (roleData[sector] && roleData[sector][selectedFunction]) {
+      roleData[sector][selectedFunction].forEach(role => {
+        const opt = document.createElement("option");
+        opt.value = role;
+        opt.textContent = role;
+        roleDropdown.appendChild(opt);
+      });
+    }
   }
 
   async function submitPrompt() {
-    const sector = document.getElementById("sector").value.trim();
-    const role = document.getElementById("role").value.trim();
-    const prompt = document.getElementById("prompt").value.trim();
+    const sector = document.getElementById("sector").value;
+    const role = document.getElementById("role").value;
+    const prompt = document.getElementById("prompt").value;
     const responseBox = document.getElementById("response");
 
     if (!sector || !role || !prompt) {
