@@ -1,11 +1,14 @@
+import os
+import uvicorn
+import hashlib
+import logging
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
-import os, uvicorn, hashlib, logging
 
 # Load .env
 load_dotenv()
@@ -15,10 +18,10 @@ client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("atis")
 
-# App init
+# Init app
 app = FastAPI()
 
-# CORS
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,30 +30,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files
+# ✅ MOUNT STATIC FILES
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Serve frontend
+# Serve test.html at root
 @app.get("/")
 async def serve_ui():
     return FileResponse("test.html")
 
-# Request schema
+# Request model
 class GPTRequest(BaseModel):
     sector: str
     role: str
     prompt: str
 
-# Cache
+# In-memory cache
 cache = {}
 
 def make_cache_key(sector, role, prompt):
     return hashlib.sha256(f"{sector}|{role}|{prompt}".encode()).hexdigest()
 
-# GPT handler
+# Generate GPT response
 @app.post("/generate")
 async def generate_response(request: GPTRequest):
-    logger.info(f"Request: {request.sector} / {request.role} / {request.prompt}")
+    logger.info(f"Prompt received: {request.prompt}")
     cache_key = make_cache_key(request.sector, request.role, request.prompt)
     if cache_key in cache:
         return JSONResponse(content={"response": cache[cache_key]})
@@ -76,6 +79,6 @@ async def generate_response(request: GPTRequest):
         logger.error(f"OpenAI Error: {e}")
         return JSONResponse(content={"response": f"Error: {str(e)}"})
 
-# Launch
+# Start server
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
