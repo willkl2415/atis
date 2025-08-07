@@ -48,7 +48,7 @@
       display: block;
       margin-top: 20px;
     }
-    textarea, select {
+    select, textarea, input {
       width: 100%;
       padding: 12px;
       font-size: 16px;
@@ -56,6 +56,24 @@
       border: 1px solid #bbb;
       border-radius: 6px;
       box-sizing: border-box;
+    }
+    #role-results {
+      background: #fff;
+      border: 1px solid #ccc;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-top: 0;
+      display: none;
+      position: absolute;
+      z-index: 1;
+      width: calc(100% - 24px);
+    }
+    #role-results div {
+      padding: 10px;
+      cursor: pointer;
+    }
+    #role-results div:hover {
+      background-color: #f1c40f;
     }
     button {
       margin-top: 20px;
@@ -77,86 +95,135 @@
       border-radius: 6px;
       white-space: pre-wrap;
     }
+    .role-container {
+      position: relative;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container">
+<div class="container">
 
-    <div class="intro">
-      <h1>ATIS (Artificial Training Intelligence System)</h1>
-      <div class="strapline">The Future of AI Human Performance Support Anytime, Anywhere</div>
+  <div class="intro">
+    <h1>ATIS (Artificial Training Intelligence System)</h1>
+    <div class="strapline">The Future of AI Human Performance Support Anytime, Anywhere</div>
 
-      <p><strong>Welcome to ATIS — a simple concept with mind-blowing results.</strong></p>
+    <p><strong>Welcome to ATIS — a simple concept with mind-blowing results.</strong></p>
 
-      <p>You have a question about your work, a task, a decision, or something you're unsure about — and ATIS responds instantly with clear, helpful guidance. No setup, no jargon, no delay — just the answer you need, exactly when and where you need it.</p>
+    <p>You have a question about your work, a task, a decision, or something you're unsure about — and ATIS responds instantly with clear, helpful guidance. No setup, no jargon, no delay — just the answer you need, exactly when and where you need it.</p>
 
-      <p>Whether you're travelling, preparing for something important, solving a problem on the spot, or double-checking a detail in the moment — ATIS is always ready.</p>
+    <p>Whether you're travelling, preparing for something important, solving a problem on the spot, or double-checking a detail in the moment — ATIS is always ready.</p>
 
-      <p>It's the pinnacle of in-the-moment performance support — helping you feel more confident, capable, and informed, wherever you are.</p>
+    <p>It's the pinnacle of in-the-moment performance support — helping you feel more confident, capable, and informed, wherever you are.</p>
 
-      <p class="closing-line">
-        ATIS isn’t just performance support — it’s the end of waiting for answers.
-      </p>
-    </div>
-
-    <label for="sector">Sector</label>
-    <select id="sector">
-      <option>Defence (Training)</option>
-      <option>Education</option>
-      <option>Healthcare</option>
-      <option>Energy</option>
-      <option>Technology</option>
-      <option>Finance</option>
-    </select>
-
-    <label for="role">Role</label>
-    <select id="role">
-      <option>Training Analyst</option>
-      <option>Training Designer</option>
-      <option>Content Developer</option>
-      <option>Learning Advisor</option>
-      <option>Instructor</option>
-      <option>Program Manager</option>
-    </select>
-
-    <label for="prompt">Prompt</label>
-    <textarea id="prompt" rows="5">What is the purpose of the DSAT Analysis phase?</textarea>
-
-    <button onclick="submitPrompt()">Submit Prompt</button>
-
-    <div id="response"></div>
+    <p class="closing-line">
+      ATIS isn’t just performance support — it’s the end of waiting for answers.
+    </p>
   </div>
 
-  <script>
-    async function submitPrompt() {
-      const sector = document.getElementById("sector").value.trim();
-      const role = document.getElementById("role").value.trim();
-      const prompt = document.getElementById("prompt").value.trim();
-      const responseBox = document.getElementById("response");
+  <label for="sector">Sector</label>
+  <select id="sector" onchange="clearRole()">
+    <option value="defence">Defence</option>
+    <option value="education">Education</option>
+    <option value="healthcare">Healthcare</option>
+    <option value="retail">Retail</option>
+    <option value="government">Government</option>
+  </select>
 
-      if (!sector || !role || !prompt) {
-        responseBox.textContent = "Please fill in all fields before submitting.";
-        return;
-      }
+  <label for="role">Role</label>
+  <div class="role-container">
+    <input type="text" id="role" placeholder="Type to search for a role..." oninput="filterRoles()" autocomplete="off">
+    <div id="role-results"></div>
+  </div>
 
-      responseBox.textContent = "Thinking...";
+  <label for="prompt">Prompt</label>
+  <textarea id="prompt" rows="5">What is the purpose of the DSAT Analysis phase?</textarea>
 
-      try {
-        const res = await fetch("/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sector, role, prompt })
-        });
+  <button onclick="submitPrompt()">Submit Prompt</button>
 
-        const data = await res.json();
-        const cleaned = (data.response || "").replaceAll("**", "");
-        responseBox.textContent = cleaned || "No response received.";
-      } catch (err) {
-        responseBox.textContent = "Error: " + err.message;
-      }
+  <div id="response"></div>
+</div>
+
+<script>
+  const rolesBySector = {
+    defence: [
+      "Infantry Officer", "Cyber Warfare Specialist", "Training Specialist",
+      "Pilot", "RAF Medic", "Logistics Officer"
+    ],
+    education: [
+      "Teacher", "Headteacher", "Academic Registrar", "Lecturer", "TA", "Professor"
+    ],
+    healthcare: [
+      "Nurse", "Physiotherapist", "Healthcare Assistant", "Paramedic", "Doctor"
+    ],
+    retail: [
+      "Store Manager", "Sales Associate", "Cashier", "Visual Merchandiser"
+    ],
+    government: [
+      "Policy Officer", "Civil Servant", "Local Government Officer", "Border Force Officer"
+    ]
+  };
+
+  function clearRole() {
+    document.getElementById("role").value = "";
+    document.getElementById("role-results").style.display = "none";
+  }
+
+  function filterRoles() {
+    const sector = document.getElementById("sector").value;
+    const input = document.getElementById("role").value.toLowerCase();
+    const resultsBox = document.getElementById("role-results");
+
+    if (!rolesBySector[sector] || input.length === 0) {
+      resultsBox.style.display = "none";
+      return;
     }
-  </script>
+
+    const matches = rolesBySector[sector].filter(role => role.toLowerCase().includes(input));
+    if (matches.length === 0) {
+      resultsBox.style.display = "none";
+      return;
+    }
+
+    resultsBox.innerHTML = matches.map(role =>
+      `<div onclick="selectRole('${role}')">${role}</div>`
+    ).join('');
+    resultsBox.style.display = "block";
+  }
+
+  function selectRole(role) {
+    document.getElementById("role").value = role;
+    document.getElementById("role-results").style.display = "none";
+  }
+
+  async function submitPrompt() {
+    const sector = document.getElementById("sector").value.trim();
+    const role = document.getElementById("role").value.trim();
+    const prompt = document.getElementById("prompt").value.trim();
+    const responseBox = document.getElementById("response");
+
+    if (!sector || !role || !prompt) {
+      responseBox.textContent = "Please fill in all fields before submitting.";
+      return;
+    }
+
+    responseBox.textContent = "Thinking...";
+
+    try {
+      const res = await fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sector, role, prompt })
+      });
+
+      const data = await res.json();
+      const cleaned = (data.response || "").replaceAll("**", "");
+      responseBox.textContent = cleaned || "No response received.";
+    } catch (err) {
+      responseBox.textContent = "Error: " + err.message;
+    }
+  }
+</script>
 
 </body>
 </html>
