@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ATIS Demo</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -15,48 +15,40 @@
       padding: 2em;
       margin: 0;
     }
-    h1 {
-      font-weight: bold;
-      text-align: center;
-    }
-    em {
-      margin-bottom: 1em;
-      display: block;
-      text-align: center;
-    }
+    h1 { font-weight: bold; text-align: center; margin-bottom: 0.25em; }
+    em { margin-bottom: 1.5em; display: block; text-align: center; }
     label {
       font-weight: bold;
       margin-top: 1em;
       display: block;
       width: 100%;
       max-width: 700px;
-      background-color: #deb62f; /* orange bar */
-      padding: 0.3em;
+      background-color: #deb62f;      /* orange bar */
+      padding: 0.5em;
       box-sizing: border-box;
+      border-radius: 4px 4px 0 0;
     }
     select, textarea {
       width: 100%;
       max-width: 700px;
-      padding: 0.5em;
+      padding: 0.6em;
       font-size: 1em;
-      margin-top: 0.3em;
-      border-radius: 6px;
+      border-radius: 0 0 6px 6px;
       border: 1px solid #ccc;
       box-sizing: border-box;
+      background: #fff;
     }
+    textarea { min-height: 130px; }
     button {
-      padding: 0.5em 1.5em;
+      padding: 0.6em 1.5em;
       font-size: 1em;
       background-color: #deb62f;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      margin: 1em 0;
+      margin: 1.25em 0;
     }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
     .response {
       background-color: white;
       max-width: 700px;
@@ -67,8 +59,10 @@
       min-height: 100px;
       white-space: pre-wrap;
       line-height: 1.4;
+      border: 1px solid #ccc;
       box-sizing: border-box;
     }
+    .muted { opacity: .7; font-style: italic; }
   </style>
 </head>
 <body>
@@ -85,18 +79,19 @@
   <select id="role"><option value="">Select a role</option></select>
 
   <label for="prompt">Prompt</label>
-  <textarea id="prompt" rows="5" placeholder="Write or copy and paste your question here"></textarea>
+  <textarea id="prompt" placeholder="Write or copy and paste your question here"></textarea>
 
   <button id="submitBtn">Submit Prompt</button>
 
-  <div id="response" class="response">Your response will appear here...</div>
+  <div id="response" class="response muted">Your response will appear here...</div>
 
-  <!-- Load roles and script -->
   <script src="roles.js"></script>
   <script>
+    // === CONFIG ===
     const API_BASE = "https://atis-api.onrender.com";
     const ENDPOINT = "/generate";
 
+    // === DOM ===
     const sectorSelect = document.getElementById("sector");
     const functionSelect = document.getElementById("function");
     const roleSelect = document.getElementById("role");
@@ -104,9 +99,10 @@
     const submitBtn = document.getElementById("submitBtn");
     const responseDiv = document.getElementById("response");
 
+    // === Populate dropdowns from roles.js ===
     function populateSectors() {
       sectorSelect.innerHTML = "<option value=''>Select a sector</option>";
-      window.ATIS_ROLES.forEach(sec => {
+      (window.ATIS_ROLES || []).forEach(sec => {
         const opt = document.createElement("option");
         opt.value = sec.sector;
         opt.textContent = sec.sector;
@@ -117,7 +113,7 @@
     function populateFunctions() {
       functionSelect.innerHTML = "<option value=''>Select a function</option>";
       roleSelect.innerHTML = "<option value=''>Select a role</option>";
-      const sector = window.ATIS_ROLES.find(s => s.sector === sectorSelect.value);
+      const sector = (window.ATIS_ROLES || []).find(s => s.sector === sectorSelect.value);
       if (sector) {
         sector.functions.forEach(func => {
           const opt = document.createElement("option");
@@ -130,7 +126,7 @@
 
     function populateRoles() {
       roleSelect.innerHTML = "<option value=''>Select a role</option>";
-      const sector = window.ATIS_ROLES.find(s => s.sector === sectorSelect.value);
+      const sector = (window.ATIS_ROLES || []).find(s => s.sector === sectorSelect.value);
       if (sector) {
         const func = sector.functions.find(f => f.name === functionSelect.value);
         if (func) {
@@ -144,19 +140,25 @@
       }
     }
 
+    // === Helpers ===
+    function show(text, muted=false) {
+      responseDiv.classList.toggle("muted", muted);
+      responseDiv.textContent = text;
+    }
+
     async function submitPrompt() {
       const sector = sectorSelect.value;
-      const func = functionSelect.value;
+      const func = functionSelect.value; // NOTE: we send "func" key to backend
       const role = roleSelect.value;
       const prompt = promptInput.value.trim();
 
       if (!sector || !func || !role || !prompt) {
-        responseDiv.textContent = "Please select sector, function, role, and enter a prompt.";
+        show("Please select sector, function, role, and enter a prompt.");
         return;
       }
 
       submitBtn.disabled = true;
-      responseDiv.textContent = "Thinking...";
+      show("Thinking...", true);
 
       try {
         const res = await fetch(API_BASE + ENDPOINT, {
@@ -164,19 +166,39 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sector, func, role, prompt })
         });
+
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          // Backend sent HTML/text — surface it for diagnosis
+          const raw = await res.text();
+          show("Non-JSON response from API:\n\n" + raw);
+          console.warn("Non-JSON response:", raw);
+          return;
+        }
+
         const data = await res.json();
-        responseDiv.textContent = data.text || "No response received.";
+        // Accept several possible keys; otherwise show full JSON
+        const text = data.text || data.response || data.message || data.detail;
+        if (text && String(text).trim().length > 0) {
+          show(String(text));
+        } else {
+          show("Unexpected JSON from API:\n\n" + JSON.stringify(data, null, 2));
+          console.warn("Unexpected JSON:", data);
+        }
       } catch (err) {
-        responseDiv.textContent = "Error: " + err.message;
+        show("Network or CORS error:\n\n" + (err && err.message ? err.message : String(err)));
+        console.error(err);
       } finally {
         submitBtn.disabled = false;
       }
     }
 
+    // Events
     sectorSelect.addEventListener("change", populateFunctions);
     functionSelect.addEventListener("change", populateRoles);
     submitBtn.addEventListener("click", submitPrompt);
 
+    // Init
     populateSectors();
   </script>
 </body>
