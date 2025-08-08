@@ -1,116 +1,135 @@
-// ---------- CONFIG ----------
-const API_BASE = "https://atis-api.onrender.com"; // Render base URL
-const GENERATE_PATH = "/generate";
+(() => {
+  const byId = (id) => document.getElementById(id);
 
-// ---------- ELEMENTS ----------
-const sectorSelect   = document.getElementById("sector");
-const functionSelect = document.getElementById("function");
-const roleSelect     = document.getElementById("role");
-const promptInput    = document.getElementById("prompt");
-const submitBtn      = document.getElementById("submitBtn");
-const clearBtn       = document.getElementById("clearBtn");
-const responseDiv    = document.getElementById("response");
+  const industryEl = byId("industry");
+  const functionEl = byId("function");
+  const roleEl = byId("role");
+  const promptEl = byId("prompt");
+  const responseEl = byId("response");
+  const submitBtn = byId("submitBtn");
+  const clearBtn = byId("clearBtn");
 
-// ---------- POPULATE DROPDOWNS FROM roles.js ----------
-function populateSectors() {
-  try {
-    const sectors = Object.keys(roleData || {});
+  // Robust check: roles map must exist and be an object
+  const ROLES = (typeof window !== "undefined" && window.ATIS_ROLES && typeof window.ATIS_ROLES === "object")
+    ? window.ATIS_ROLES
+    : null;
+
+  function setError(msg) {
+    responseEl.textContent = msg;
+    submitBtn.disabled = true;
+    industryEl.disabled = true;
+    functionEl.disabled = true;
+    roleEl.disabled = true;
+  }
+
+  function populateIndustries() {
+    const sectors = Object.keys(ROLES).sort();
     sectors.forEach(sec => {
       const opt = document.createElement("option");
       opt.value = sec;
       opt.textContent = sec;
-      sectorSelect.appendChild(opt);
+      industryEl.appendChild(opt);
     });
-  } catch {
-    responseDiv.textContent = "Error: roles.js not loaded or malformed.";
   }
-}
 
-function populateFunctions() {
-  functionSelect.innerHTML = '<option value="">Select Function</option>';
-  roleSelect.innerHTML     = '<option value="">Select Role</option>';
-  const sector = sectorSelect.value;
-  if (!sector) return;
-
-  const functions = roleData[sector];
-  if (functions) {
-    Object.keys(functions).forEach(fn => {
+  function populateFunctions(sector) {
+    functionEl.innerHTML = '<option value="">Select Function</option>';
+    roleEl.innerHTML = '<option value="">Select Role</option>';
+    if (!sector || !ROLES[sector]) return;
+    Object.keys(ROLES[sector]).sort().forEach(fn => {
       const opt = document.createElement("option");
       opt.value = fn;
       opt.textContent = fn;
-      functionSelect.appendChild(opt);
+      functionEl.appendChild(opt);
     });
   }
-}
 
-function populateRoles() {
-  roleSelect.innerHTML = '<option value="">Select Role</option>';
-  const sector = sectorSelect.value;
-  const fn     = functionSelect.value;
-  if (!sector || !fn) return;
-
-  const roles = roleData[sector]?.[fn];
-  if (Array.isArray(roles)) {
-    roles.forEach(r => {
+  function populateRoles(sector, fn) {
+    roleEl.innerHTML = '<option value="">Select Role</option>';
+    const roles = ROLES[sector]?.[fn];
+    if (!roles || !Array.isArray(roles)) return;
+    roles.slice().sort().forEach(r => {
       const opt = document.createElement("option");
       opt.value = r;
       opt.textContent = r;
-      roleSelect.appendChild(opt);
+      roleEl.appendChild(opt);
     });
   }
-}
 
-// ---------- SUBMIT ----------
-async function submitPrompt() {
-  const sector = sectorSelect.value;
-  const func   = functionSelect.value;
-  const role   = roleSelect.value;
-  const prompt = (promptInput.value || "").trim();
-
-  if (!sector || !func || !role || !prompt) {
-    responseDiv.textContent = "Please select sector, function, role, and enter your question.";
-    return;
-  }
-
-  submitBtn.disabled = true;
-  responseDiv.textContent = "Thinking…";
-
-  try {
-    const res = await fetch(`${API_BASE}${GENERATE_PATH}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sector, func, role, prompt })
-    });
-
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`API error (${res.status}): ${txt}`);
+  async function postJSON(url, data, timeoutMs = 20000) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data),
+        signal: ctrl.signal,
+      });
+      clearTimeout(t);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } finally {
+      clearTimeout(t);
     }
-
-    const data = await res.json();
-    const out  = data.text || data.response || "No response received.";
-    responseDiv.textContent = out;
-  } catch (err) {
-    responseDiv.textContent = `Error: ${err.message}`;
-  } finally {
-    submitBtn.disabled = false;
   }
-}
 
-// ---------- CLEAR (cosmetic for now, but it works cleanly) ----------
-function clearUI() {
-  sectorSelect.value = "";
-  functionSelect.innerHTML = '<option value="">Select Function</option>';
-  roleSelect.innerHTML     = '<option value="">Select Role</option>';
-  promptInput.value = "";
-  responseDiv.textContent = "Your response will appear here…";
-}
+  function wireEvents() {
+    industryEl.addEventListener("change", () => {
+      populateFunctions(industryEl.value);
+    });
 
-// ---------- EVENTS ----------
-sectorSelect.addEventListener("change", populateFunctions);
-functionSelect.addEventListener("change", populateRoles);
-submitBtn.addEventListener("click", submitPrompt);
-clearBtn.addEventListener("click", clearUI);
+    functionEl.addEventListener("change", () => {
+      populateRoles(industryEl.value, functionEl.value);
+    });
 
-// ---------- INIT ----------
-populateSectors();
+    submitBtn.addEventListener("click", async () => {
+      const sector = industryEl.value;
+      const fn = functionEl.value;
+      const role = roleEl.value;
+      const prompt = promptEl.value.trim();
+
+      if (!sector || !fn || !role || !prompt) {
+        responseEl.textContent = "Please select sector, function, role, and enter a question.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      responseEl.textContent = "Thinking…";
+
+      try {
+        // Relative path so it works locally or when proxied (e.g., Render, Vercel, etc.)
+        const data = await postJSON("/generate", {
+          sector,
+          function: fn,
+          role,
+          prompt,
+        }, 30000); // 30s guard
+
+        responseEl.textContent = (data && data.response) ? data.response.trim() : "No response.";
+      } catch (err) {
+        responseEl.textContent = `Error calling backend: ${err.message || err}`;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      promptEl.value = "";
+      responseEl.textContent = "";
+      industryEl.value = "";
+      functionEl.innerHTML = '<option value="">Select Function</option>';
+      roleEl.innerHTML = '<option value="">Select Role</option>';
+    });
+  }
+
+  // Boot
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!ROLES) {
+      setError("Error: roles.js not loaded or malformed.");
+      return;
+    }
+    populateIndustries();
+    wireEvents();
+  });
+})();
