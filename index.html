@@ -4,168 +4,217 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ATIS Demo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    /* ---- EXACT SAME VISUAL LAYOUT YOU APPROVED ---- */
-    body{background:#FFFF00;font-family:'Roboto',sans-serif;margin:0}
-    .wrap{max-width:820px;margin:24px auto;padding:0 16px}
-    .hero{background:#fff3;border-radius:6px;padding:18px 20px;margin-bottom:18px}
-    h1{font-size:32px;margin:0 0 8px;font-weight:700;text-align:left}
-    p{margin:0 0 10px;line-height:1.45}
-    .label{background:#e6c43a;padding:8px 10px;border-radius:4px;margin:22px 0 8px;font-weight:700;width:100%}
-    select,textarea{width:100%;box-sizing:border-box;padding:12px 12px;border:1px solid #ddd;border-radius:6px;font-size:16px;background:#fff}
-    textarea{min-height:140px;resize:vertical}
-    .btn{background:#deb62f;border:none;border-radius:6px;padding:12px 18px;font-size:16px;cursor:pointer;margin:16px 0}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .card{background:#fff;border-radius:8px;padding:18px 20px}
-    .muted{background:#fff6c7;border-radius:8px;padding:14px 16px;margin-top:12px}
+    :root{
+      --bg:#FFF44A;          /* bright yellow */
+      --panel:#fff7b3;       /* soft pale for field rows */
+      --text:#111;
+      --muted:#333;
+      --accent:#e2b43a;      /* button */
+      --radius:8px;
+      --shadow:0 2px 10px rgba(0,0,0,.06);
+      --maxw:1280px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,Helvetica,sans-serif;
+      color:var(--text);
+      line-height:1.4;
+    }
+
+    /* page grid */
+    .wrap{
+      margin:0 auto;
+      max-width:var(--maxw);
+      padding:24px 16px 64px;
+      display:grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap:28px;
+    }
+
+    /* left hero panel */
+    .hero{
+      background:#fff;
+      border-radius:var(--radius);
+      padding:22px 24px;
+      box-shadow:var(--shadow);
+    }
+    .hero h2{
+      margin:0 0 12px;
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .hero p{
+      margin:12px 0;
+      font-size:18px;
+      color:var(--muted);
+    }
+    .hero strong.block{
+      display:block;
+      margin-top:18px;
+      font-weight:900;
+      font-size:22px;
+      color:var(--text);
+    }
+    .hero .tagline{
+      display:block;
+      margin-top:12px;
+      font-size:22px;
+      font-weight:900;
+    }
+
+    /* right side header */
+    .title{
+      margin:6px 0 2px;
+      font-size:34px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      margin:0 0 18px;
+      font-style:italic;
+      color:#222;
+    }
+
+    /* form */
+    .form-row{
+      margin:12px 0;
+    }
+    label{
+      display:block;
+      margin-bottom:6px;
+      font-weight:700;
+    }
+    select, textarea{
+      width:100%;
+      border:1px solid #ddd;
+      border-radius:var(--radius);
+      background:#fff;
+      padding:14px 12px;
+      font-size:16px;
+      outline:none;
+      box-shadow:var(--shadow);
+    }
+    /* light yellow bands behind each row like your screenshot */
+    .band{
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:10px;
+    }
+
+    textarea{
+      min-height:170px;
+      resize:vertical;
+    }
+    .actions{
+      margin-top:10px;
+    }
+    button{
+      background:var(--accent);
+      color:#000;
+      border:none;
+      border-radius:var(--radius);
+      padding:12px 22px;
+      font-size:18px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+    }
+    button:disabled{opacity:.6; cursor:not-allowed;}
+
+    /* response box */
+    #response{
+      margin-top:14px;
+      background:#fffbe6;
+      border:1px solid #f2e8b8;
+      border-radius:var(--radius);
+      padding:18px;
+      min-height:68px;
+      white-space:pre-wrap;
+      box-shadow:var(--shadow);
+    }
+
+    /* keep Function for compatibility but hide it to match screenshot */
+    .visually-hidden{
+      position:absolute !important;
+      clip:rect(1px,1px,1px,1px);
+      padding:0;border:0;height:1px;width:1px;overflow:hidden;
+    }
+
+    /* responsive */
+    @media (max-width:1020px){
+      .wrap{grid-template-columns:1fr}
+      .title{font-size:28px}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="hero">
-      <h1>Welcome to ATIS — a simple concept with mind‑blowing results.</h1>
-      <p>You have a question about your work, a task, a decision, or something you’re unsure about — and ATIS responds instantly with clear, helpful guidance. No setup, no jargon, no delay — just the answer you need, exactly when and where you need it.</p>
-      <p>Whether you’re travelling, preparing for something important, solving a problem on the spot, or double‑checking a detail in the moment — ATIS is always ready.</p>
-      <p>It’s the pinnacle of in‑the‑moment performance support — helping you feel more confident, capable, and informed, wherever you are.</p>
-      <p><strong>ATIS isn’t just performance support — it’s the end of waiting for answers.</strong></p>
-    </div>
+    <!-- LEFT PANEL (copy) -->
+    <aside class="hero">
+      <h2>ATIS &nbsp; <span style="font-weight:700">a simple concept, astonishing results.</span></h2>
 
-    <div class="label">Sector</div>
-    <select id="sector"><option value="">Select a sector</option></select>
+      <p>You have a question about your work, a task, a decision, or something you're unsure about — ATIS responds with clear, helpful guidance instantly.</p>
 
-    <div class="label">Function</div>
-    <select id="function"><option value="">Select a function</option></select>
+      <p>There’s no setup, no jargon, and no delay — just an answer when you need it, where you need it.</p>
 
-    <div class="label">Role</div>
-    <select id="role"><option value="">Select a role</option></select>
+      <p>Whether you're travelling to an event, preparing for something important, solving a problem on the spot, or double‑checking something in the moment — ATIS is always ready.</p>
 
-    <div class="label">Prompt</div>
-    <textarea id="prompt" placeholder="Write or copy and paste your question here"></textarea>
+      <p>It’s the pinnacle of human performance support — helping you feel more confident, capable, and informed whenever and wherever you are.</p>
 
-    <button id="submitBtn" class="btn">Submit Prompt</button>
+      <strong class="block">ATIS isn’t Just Performance Support</strong>
+      <span class="tagline">It’s The End Of Waiting For Answers.</span>
+    </aside>
 
-    <div id="response" class="card" style="margin-top:12px;">No response received.</div>
-    <div id="hint" class="muted" style="display:none;"></div>
+    <!-- RIGHT PANEL (app) -->
+    <main>
+      <div class="title">ATIS (Artificial Training Intelligence System)</div>
+      <div class="subtitle">The Future of AI Human Performance Support Anytime, Anywhere</div>
+
+      <!-- Sector -->
+      <div class="form-row band">
+        <label for="sector">Sector</label>
+        <select id="sector">
+          <option value="">Select a sector</option>
+        </select>
+      </div>
+
+      <!-- Function (kept for JS compatibility; hidden to match screenshot) -->
+      <div class="form-row visually-hidden">
+        <label for="function">Function</label>
+        <select id="function">
+          <option value="">Select a function</option>
+        </select>
+      </div>
+
+      <!-- Role -->
+      <div class="form-row band">
+        <label for="role">Role</label>
+        <select id="role">
+          <option value="">Select a role</option>
+        </select>
+      </div>
+
+      <!-- Prompt -->
+      <div class="form-row band">
+        <label for="prompt">Prompt</label>
+        <textarea id="prompt" placeholder="What would you like ATIS to help with?"></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="submitBtn">Submit Prompt</button>
+      </div>
+
+      <div id="response"> </div>
+    </main>
   </div>
 
+  <!-- Your existing scripts (unchanged for speed/streaming/functionality) -->
   <script src="roles.js"></script>
-  <script>
-    // ---- API settings ----
-    const API_BASE = "https://atis-api.onrender.com";
-    const ENDPOINT = "/generate";
-    const HEALTH = "/health";
-
-    // ---- DOM ----
-    const sectorSelect = document.getElementById("sector");
-    const functionSelect = document.getElementById("function");
-    const roleSelect = document.getElementById("role");
-    const promptInput = document.getElementById("prompt");
-    const submitBtn = document.getElementById("submitBtn");
-    const responseDiv = document.getElementById("response");
-    const hintDiv = document.getElementById("hint");
-
-    // ---- Populate from roles.js ----
-    function populateSectors() {
-      (window.ATIS_ROLES || []).forEach(sec => {
-        const opt = document.createElement("option");
-        opt.value = sec.sector;
-        opt.textContent = sec.sector;
-        sectorSelect.appendChild(opt);
-      });
-    }
-
-    function populateFunctions() {
-      functionSelect.innerHTML = "<option value=''>Select a function</option>";
-      roleSelect.innerHTML = "<option value=''>Select a role</option>";
-      const sector = (window.ATIS_ROLES || []).find(s => s.sector === sectorSelect.value);
-      if (sector) {
-        sector.functions.forEach(func => {
-          const opt = document.createElement("option");
-          opt.value = func.name;
-          opt.textContent = func.name;
-          functionSelect.appendChild(opt);
-        });
-      }
-    }
-
-    function populateRoles() {
-      roleSelect.innerHTML = "<option value=''>Select a role</option>";
-      const sector = (window.ATIS_ROLES || []).find(s => s.sector === sectorSelect.value);
-      if (!sector) return;
-      const func = sector.functions.find(f => f.name === functionSelect.value);
-      if (func) {
-        func.roles.forEach(role => {
-          const opt = document.createElement("option");
-          opt.value = role;
-          opt.textContent = role;
-          roleSelect.appendChild(opt);
-        });
-      }
-    }
-
-    sectorSelect.addEventListener("change", populateFunctions);
-    functionSelect.addEventListener("change", populateRoles);
-
-    // ---- Warm ping every 25s (keeps Render dyno hot) ----
-    setInterval(() => {
-      fetch(API_BASE + HEALTH, { mode: "cors" }).catch(() => {});
-    }, 25000);
-
-    // ---- Submit with a hard 6s client timeout ----
-    async function submitPrompt() {
-      const sector = sectorSelect.value;
-      const func = functionSelect.value;
-      const role = roleSelect.value;
-      const prompt = promptInput.value.trim();
-
-      if (!sector || !func || !role || !prompt) {
-        responseDiv.textContent = "Please select sector, function, role, and enter a prompt.";
-        return;
-      }
-
-      submitBtn.disabled = true;
-      responseDiv.textContent = "Thinking…";
-      hintDiv.style.display = "none";
-
-      const ctrl = new AbortController();
-      const to = setTimeout(() => ctrl.abort(), 6000); // 6s
-
-      try {
-        const res = await fetch(API_BASE + ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sector, func, role, prompt }),
-          signal: ctrl.signal,
-        });
-
-        clearTimeout(to);
-
-        if (!res.ok) {
-          const msg = await res.text().catch(() => "");
-          responseDiv.textContent = `Error: ${res.status} ${msg || res.statusText}`;
-          hintDiv.textContent = "If this keeps happening, try again or shorten the question slightly.";
-          hintDiv.style.display = "block";
-          return;
-        }
-
-        const data = await res.json();
-        responseDiv.textContent = data.text || "No response received.";
-      } catch (err) {
-        responseDiv.textContent = "Request cancelled or timed out at 6s. Please try again.";
-        hintDiv.textContent = "ATIS is tuned for speed. Shorter prompts and stable connection help keep replies snappy.";
-        hintDiv.style.display = "block";
-      } finally {
-        submitBtn.disabled = false;
-      }
-    }
-
-    submitBtn.addEventListener("click", submitPrompt);
-
-    // ---- Init ----
-    populateSectors();
-    // first warm ping right away
-    fetch(API_BASE + HEALTH, { mode: "cors" }).catch(() => {});
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
