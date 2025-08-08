@@ -2,270 +2,224 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ATIS Demo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#FFF24D; --panel:#fff3a6; --accent:#e0c14a; --text:#111; --muted:#575757; }
-    html, body { height:100%; }
-    body {
-      background: var(--bg);
-      font-family: 'Roboto', sans-serif;
-      font-size: 90%;              /* ~10% smaller overall */
-      color: var(--text);
-      margin: 0;
+    :root{
+      --bg:#FFF44F;           /* soft yellow page bg */
+      --panel:#FFEF60;        /* lighter yellow panels */
+      --card:#ffffff;         /* white cards */
+      --ink:#1b1b1b;
+      --accent:#E6BF3C;       /* gold */
+      --accent-strong:#d3a92a;
+      --danger:#e53935;       /* red clear button (cosmetic) */
+      --radius-lg:26px;
+      --radius-md:12px;
+      --shadow:0 8px 24px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Roboto,system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+      color:var(--ink);
+      background:var(--bg);
     }
 
-    /* Layout */
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 16px 64px;
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 28px;
+    /* page frame */
+    .wrap{
+      max-width:1120px;
+      margin:32px auto 64px;
+      padding:24px;
+      background:var(--panel);
+      border-radius:var(--radius-md);
+      box-shadow:var(--shadow);
+    }
+
+    /* header */
+    .title{
+      text-align:center;
+      margin:0 0 10px;
+      font-weight:900;
+      letter-spacing:.2px;
+      font-size:34px;
+      line-height:1.15;
+    }
+    .title .em{font-weight:900}
+    .kicker{
+      text-align:center;
+      margin:0 0 26px;
+      font-size:15px;
+      opacity:.85;
+      font-weight:500;
+    }
+
+    /* grid */
+    .grid{
+      display:grid;
+      grid-template-columns: 390px 1fr;
+      gap:28px;
     }
     @media (max-width: 980px){
-      .wrap{ grid-template-columns: 1fr; }
+      .grid{grid-template-columns:1fr}
     }
 
-    /* Left narrative card */
-    .narr {
-      background:#fff7c9;
-      border-radius: 12px;
-      padding: 22px 24px;
-      box-shadow: 0 1px 0 rgba(0,0,0,.06);
+    /* narrative card (left) */
+    .narrative{
+      background:var(--card);
+      border-radius: 40px;
+      padding:38px 28px;
+      min-height:360px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      box-shadow:var(--shadow);
+      border:4px solid rgba(0,0,0,.05);
     }
-    .narr-title {
-      margin: 0 0 12px;
-      text-align: center;                 /* centered, single line */
-      font-size: 1.6rem;
-      font-weight: 700;
-      letter-spacing:.2px;
-    }
-    .narr p {
-      margin: 10px 0;
-      line-height: 1.55;
-      color: var(--muted);
-    }
-    .narr-bottom {
-      margin-top: 18px;
-      text-align: center;                 /* centered CTA lines */
-      font-weight:700;
+    .narrative h2{
+      margin:0;
+      font-size:40px;
+      line-height:1.25;
+      font-weight:900;
     }
 
-    /* Right form card */
-    .panel {
-      background: #ffef8c;
-      border-radius: 14px;
-      padding: 20px 18px 24px;
-      box-shadow: 0 1px 0 rgba(0,0,0,.06);
+    /* form panel (right) */
+    .panel{
+      background:var(--panel);
+      padding:4px;
+      border-radius:var(--radius-md);
     }
-    .title {
-      margin: 0 0 6px;
-      font-size: 1.6rem;
-      font-weight: 700;
+    .field{
+      margin:16px 0;
     }
-    .subtitle {
-      margin: 0 0 18px;
-      color: var(--muted);
-      font-weight: 400;
-    }
-
-    label {
+    .label{
       display:block;
       font-weight:700;
-      margin: 12px 0 6px;
+      margin:0 0 8px;
+      font-size:14px;
     }
-    select, textarea {
-      width: 100%;
-      padding: 12px 13px;
-      font-size: 1rem;
-      border: 1px solid #d7d7d7;
-      border-radius: 10px;
-      background: #fff;
-      outline: none;
+    .chip{
+      display:inline-block;
+      background:#ffe55a;
+      border-radius:10px;
+      padding:4px 10px;
+      font-weight:700;
+      font-size:13px;
+      margin:8px 0;
     }
-    textarea { min-height: 160px; resize: vertical; }
+    select, textarea{
+      width:100%;
+      font:inherit;
+      padding:12px 14px;
+      border:1px solid #ddd;
+      border-radius:10px;
+      background:var(--card);
+      box-shadow: inset 0 1px 0 rgba(0,0,0,.03);
+    }
+    textarea{
+      min-height:130px;
+      resize:vertical;
+      line-height:1.4;
+    }
 
-    .btn {
-      display: inline-block;
-      margin-top: 14px;
-      background: var(--accent);
-      border: none;
-      color: #2a2a2a;
-      font-weight: 700;
-      padding: 12px 18px;
-      border-radius: 10px;
-      cursor: pointer;
+    /* buttons */
+    .actions{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      margin:14px 0 18px;
     }
-    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+    .btn{
+      appearance:none;
+      border:0;
+      border-radius:10px;
+      padding:12px 18px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+    }
+    #submitBtn.btn{
+      background:var(--accent);
+      color:#222;
+    }
+    #submitBtn.btn:hover{ background:var(--accent-strong); }
+    .btn-clear{
+      background:var(--danger);
+      color:#fff;
+      cursor:not-allowed; /* cosmetic only for now */
+    }
 
-    .response {
-      margin-top: 16px;
-      background:#fff7df;
-      border-radius: 12px;
-      padding: 16px;
-      min-height: 52px;
-      line-height:1.45;
-      white-space: pre-wrap;
+    /* response */
+    #response{
+      background:var(--card);
+      min-height:60px;
+      border-radius:10px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      border:1px solid #eee;
+      white-space:pre-wrap;
+      line-height:1.5;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <!-- LEFT: narrative -->
-    <section class="narr">
-      <h2 class="narr-title">ATIS  a simple concept, astonishing results.</h2>
-      <p>You have a question about your work, a task, a decision, or something you're unsure about — ATIS responds with clear, helpful guidance instantly.</p>
-      <p>There’s no setup, no jargon, and no delay — just an answer when you need it, where you need it.</p>
-      <p>Whether you're travelling to an event, preparing for something important, solving a problem on the spot, or double-checking something in the moment — ATIS is always ready.</p>
-      <p>It’s the pinnacle of human performance support — helping you feel more confident, capable, and informed whenever and wherever you are.</p>
-      <div class="narr-bottom">
-        <div>ATIS isn’t Just Performance Support</div>
-        <div>It’s The End Of Waiting For Answers.</div>
-      </div>
+  <main class="wrap">
+    <h1 class="title">
+      <span class="em">A</span>rtificial <span class="em">T</span>raining
+      <span class="em">I</span>ntelligence <span class="em">S</span>ystem
+    </h1>
+    <p class="kicker">AI Human Performance Support Anytime, Anywhere</p>
+
+    <section class="grid">
+      <!-- Left narrative card (placeholder for now) -->
+      <aside class="narrative">
+        <h2>
+          ATIS<br/>Narrative<br/>Placeholder
+        </h2>
+      </aside>
+
+      <!-- Right form -->
+      <section class="panel">
+        <div class="field">
+          <label class="label" for="sector">Select Industry Sector</label>
+          <select id="sector">
+            <option value="">Select Industry Sector</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label" for="function">Select Function</label>
+          <select id="function">
+            <option value="">Select Function</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="label" for="role">Select Role</label>
+          <select id="role">
+            <option value="">Select Role</option>
+          </select>
+        </div>
+
+        <div class="chip">Your Question</div>
+        <div class="field">
+          <textarea id="prompt" placeholder="What would you like ATIS to assist you with?"></textarea>
+        </div>
+
+        <div class="actions">
+          <button id="submitBtn" class="btn">Submit Prompt</button>
+          <button type="button" class="btn btn-clear" title="Coming soon">Clear</button>
+        </div>
+
+        <div id="response"></div>
+      </section>
     </section>
+  </main>
 
-    <!-- RIGHT: app -->
-    <section class="panel">
-      <h1 class="title">ATIS (Artificial Training Intelligence System)</h1>
-      <div class="subtitle">The Future of AI Human Performance Support Anytime, Anywhere</div>
-
-      <label for="sector">Sector</label>
-      <select id="sector"><option value="">Select a sector</option></select>
-
-      <label for="function">Function</label>
-      <select id="function"><option value="">Select a function</option></select>
-
-      <label for="role">Role</label>
-      <select id="role"><option value="">Select a role</option></select>
-
-      <label for="prompt">Prompt</label>
-      <textarea id="prompt" placeholder="What would you like ATIS to help with?"></textarea>
-
-      <button id="submitBtn" class="btn">Submit Prompt</button>
-
-      <div id="response" class="response"></div>
-    </section>
-  </div>
-
-  <!-- data + logic -->
+  <!-- Keep these includes the same so functionality & speed remain unchanged -->
   <script src="roles.js"></script>
-  <script>
-    // ---- Fast API config (unchanged performance) ----
-    const API_BASE = "https://atis-api.onrender.com";
-    const ENDPOINT = "/generate";
-
-    const sectorSelect = document.getElementById("sector");
-    const functionSelect = document.getElementById("function");
-    const roleSelect = document.getElementById("role");
-    const promptInput = document.getElementById("prompt");
-    const submitBtn = document.getElementById("submitBtn");
-    const responseDiv = document.getElementById("response");
-
-    // ---- Adapter so we work with either roles.js shapes ----
-    // Shape A (old): window.roleData = { Sector: { Function:[roles...] } }
-    // Shape B (new): window.ATIS_ROLES = [ { sector, functions:[{name, roles:[]}] } ]
-    function getSectors(){
-      if (window.ATIS_ROLES) return window.ATIS_ROLES.map(s => s.sector);
-      if (window.roleData)   return Object.keys(window.roleData);
-      return [];
-    }
-    function getFunctions(sector){
-      if (window.ATIS_ROLES){
-        const s = window.ATIS_ROLES.find(x => x.sector === sector);
-        return s ? s.functions.map(f => f.name) : [];
-      }
-      if (window.roleData){
-        const fns = window.roleData[sector] || {};
-        return Object.keys(fns);
-      }
-      return [];
-    }
-    function getRoles(sector, func){
-      if (window.ATIS_ROLES){
-        const s = window.ATIS_ROLES.find(x => x.sector === sector);
-        const f = s ? s.functions.find(ff => ff.name === func) : null;
-        return f ? f.roles : [];
-      }
-      if (window.roleData){
-        const fns = window.roleData[sector] || {};
-        return fns[func] || [];
-      }
-      return [];
-    }
-
-    // ---- Populate dropdowns ----
-    function populateSectors(){
-      sectorSelect.innerHTML = "<option value=''>Select a sector</option>";
-      getSectors().forEach(sec=>{
-        const o = document.createElement("option");
-        o.value = sec; o.textContent = sec;
-        sectorSelect.appendChild(o);
-      });
-      // reset
-      functionSelect.innerHTML = "<option value=''>Select a function</option>";
-      roleSelect.innerHTML = "<option value=''>Select a role</option>";
-    }
-    function populateFunctions(){
-      functionSelect.innerHTML = "<option value=''>Select a function</option>";
-      roleSelect.innerHTML = "<option value=''>Select a role</option>";
-      const sector = sectorSelect.value;
-      getFunctions(sector).forEach(fn=>{
-        const o = document.createElement("option");
-        o.value = fn; o.textContent = fn;
-        functionSelect.appendChild(o);
-      });
-    }
-    function populateRoles(){
-      roleSelect.innerHTML = "<option value=''>Select a role</option>";
-      const sector = sectorSelect.value;
-      const func = functionSelect.value;
-      getRoles(sector, func).forEach(r=>{
-        const o = document.createElement("option");
-        o.value = r; o.textContent = r;
-        roleSelect.appendChild(o);
-      });
-    }
-
-    // ---- Submit (keeps the same payload keys your API expects) ----
-    async function submitPrompt(){
-      const sector = sectorSelect.value;
-      const func   = functionSelect.value;
-      const role   = roleSelect.value;
-      const prompt = promptInput.value.trim();
-
-      if(!sector || !func || !role || !prompt){
-        responseDiv.textContent = "Please select sector, function, role, and enter a prompt.";
-        return;
-      }
-
-      submitBtn.disabled = true;
-      responseDiv.textContent = "Thinking...";
-
-      try{
-        const res = await fetch(API_BASE + ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify({ sector, function: func, role, prompt }) // include function
-        });
-        const data = await res.json();
-        responseDiv.textContent = data.text || "No response received.";
-      }catch(err){
-        responseDiv.textContent = "Error: " + err.message;
-      }finally{
-        submitBtn.disabled = false;
-      }
-    }
-
-    // wire up
-    sectorSelect.addEventListener("change", populateFunctions);
-    functionSelect.addEventListener("change", populateRoles);
-    submitBtn.addEventListener("click", submitPrompt);
-
-    // init
-    populateSectors();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
