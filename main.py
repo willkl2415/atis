@@ -1,148 +1,73 @@
-import os
-import time
-import asyncio
-from typing import Dict, Any, Tuple
-
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from openai import OpenAI
+import openai
+import os
 
-# -----------------------------
-# FastAPI app
-# -----------------------------
-app = FastAPI(title="ATIS API", version="1.0.0")
+# ---------- API KEY ----------
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise RuntimeError("OPENAI_API_KEY is not set.")
 
-# Allow your GitHub Pages site + localhost during dev
-ALLOWED_ORIGINS = [
-    "https://willkl2415.github.io",   # GitHub Pages root
-    "https://willkl2415.github.io/atis",
-    "http://127.0.0.1:8002",
-    "http://localhost:8002",
-]
+openai.api_key = OPENAI_API_KEY
 
+# ---------- FastAPI APP ----------
+app = FastAPI()
+
+# Allow all CORS (GitHub Pages frontend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# -----------------------------
-# OpenAI client
-# -----------------------------
-if not os.getenv("OPENAI_API_KEY"):
-    raise RuntimeError("OPENAI_API_KEY is not set.")
-
-# We'll set a per-request timeout later via with_options
-client = OpenAI()
-
-# -----------------------------
-# Simple in-memory cache (TTL)
-# -----------------------------
-CACHE: Dict[str, Tuple[float, str]] = {}  # key -> (expires_at_epoch, text)
-CACHE_TTL_SECONDS = 600                   # 10 minutes
-CACHE_MAX_KEYS = 64
-
-def _cache_get(key: str) -> str | None:
-    item = CACHE.get(key)
-    if not item:
-        return None
-    exp, val = item
-    if time.time() > exp:
-        CACHE.pop(key, None)
-        return None
-    return val
-
-def _cache_put(key: str, value: str) -> None:
-    # Basic size control
-    if len(CACHE) >= CACHE_MAX_KEYS:
-        # remove oldest (not perfect LRU, but fine for our needs)
-        oldest_key = next(iter(CACHE))
-        CACHE.pop(oldest_key, None)
-    CACHE[key] = (time.time() + CACHE_TTL_SECONDS, value)
-
-# -----------------------------
-# Schemas
-# -----------------------------
-class GenerateIn(BaseModel):
+# ---------- Request Schema ----------
+class PromptRequest(BaseModel):
     sector: str
     func: str
     role: str
     prompt: str
 
-class GenerateOut(BaseModel):
-    text: str
-
-# -----------------------------
-# Health + root
-# -----------------------------
+# ---------- Root ----------
 @app.get("/")
-def root():
-    return {"service": "ATIS API", "status": "ok", "message": "Use POST /generate with { sector, function, role, prompt }."}
+async def root():
+    return {"message": "ATIS API streaming endpoint is live"}
 
-@app.get("/health")
-def health():
-    return {"ok": True, "ts": int(time.time())}
+# ---------- Streaming Endpoint ----------
+@app.post("/generate")
+async def generate_stream(request: PromptRequest):
+    """
+    Streams GPT-3.5-Turbo output token-by-token for ChatGPT-like instant responses.
+    """
 
-# -----------------------------
-# Generate endpoint (fast path)
-# -----------------------------
-SYSTEM_PROMPT = (
-    "You are ATIS, a realtime coaching co‑pilot. "
-    "Give concise, actionable guidance tailored to the user's sector, function, and role. "
-    "Avoid markdown bold/italics; output plain, readable text with short bullets if useful."
-)
-
-MODEL = "gpt-4o-mini"       # very fast + cheap; good quality
-MAX_OUTPUT_TOKENS = 180     # keep answers snappy
-TEMPERATURE = 0.4
-
-@app.post("/generate", response_model=GenerateOut)
-async def generate(body: GenerateIn):
-    # --- cache key
-    key = f"{body.sector}||{body.func}||{body.role}||{body.prompt.strip()}"
-    cached = _cache_get(key)
-    if cached is not None:
-        return {"text": cached}
-
-    # --- construct compact user prompt
-    user_content = (
-        f"Sector: {body.sector}\n"
-        f"Function: {body.func}\n"
-        f"Role: {body.role}\n\n"
-        f"Question: {body.prompt.strip()}\n\n"
-        "Constraints: plain text only (no **bold**). Keep it crisp."
+    # Build the role-specific context
+    context = (
+        f"You are ATIS (AI-powered Training Intelligence System). "
+        f"Provide a clear, concise, role-specific answer in plain text with no markdown bold.\n\n"
+        f"Sector: {request.sector}\n"
+        f"Function: {request.func}\n"
+        f"Role: {request.role}\n\n"
+        f"User question: {request.prompt}"
     )
 
-    # --- make the OpenAI request with a hard 6s timeout
-    oai = client.with_options(timeout=6.0)  # seconds
+    # Define a generator that yields streamed tokens
+    def stream_tokens():
+        try:
+            stream = openai.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": context}],
+                max_tokens=500,
+                temperature=0.7,
+                stream=True
+            )
+            for chunk in stream:
+                delta = chunk.choices[0].delta.get("content", "")
+                if delta:
+                    yield delta
+        except Exception as e:
+            yield f"[Error: {str(e)}]"
 
-    async def _call_openai() -> str:
-        # Using the Responses API (new SDK) for speed and simplicity
-        resp = oai.responses.create(
-            model=MODEL,
-            input=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_content},
-            ],
-            temperature=TEMPERATURE,
-            max_output_tokens=MAX_OUTPUT_TOKENS,
-            # force plain text
-            response_format={"type": "text"},
-        )
-        # responses.create returns text in a friendly place:
-        text = resp.output_text or ""
-        return text.strip() or "No response."
-
-    try:
-        text: str = await asyncio.wait_for(_call_openai(), timeout=6.5)
-    except asyncio.TimeoutError:
-        raise HTTPException(status_code=504, detail="Upstream timeout after 6s. Please try again.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"OpenAI error: {e}")
-
-    # --- save to cache and return
-    _cache_put(key, text)
-    return {"text": text}
+    # Return the streaming response
+    return StreamingResponse(stream_tokens(), media_type="text/plain; charset=utf-8")
