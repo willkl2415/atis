@@ -1,93 +1,116 @@
-// script.js
+// ---------- CONFIG ----------
+const API_BASE = "https://atis-api.onrender.com"; // Render base URL
+const GENERATE_PATH = "/generate";
 
-// 1) Point this to your Render backend (already live)
-const API_BASE = "https://atis-api.onrender.com";
-const ENDPOINT = "/generate";
+// ---------- ELEMENTS ----------
+const sectorSelect   = document.getElementById("sector");
+const functionSelect = document.getElementById("function");
+const roleSelect     = document.getElementById("role");
+const promptInput    = document.getElementById("prompt");
+const submitBtn      = document.getElementById("submitBtn");
+const clearBtn       = document.getElementById("clearBtn");
+const responseDiv    = document.getElementById("response");
 
-const industrySel = document.getElementById("industry");
-const functionSel = document.getElementById("function");
-const roleSel     = document.getElementById("role");
-const promptTA    = document.getElementById("prompt");
-const submitBtn   = document.getElementById("submitBtn");
-const clearBtn    = document.getElementById("clearBtn");
-const responseDiv = document.getElementById("response");
+// ---------- POPULATE DROPDOWNS FROM roles.js ----------
+function populateSectors() {
+  try {
+    const sectors = Object.keys(roleData || {});
+    sectors.forEach(sec => {
+      const opt = document.createElement("option");
+      opt.value = sec;
+      opt.textContent = sec;
+      sectorSelect.appendChild(opt);
+    });
+  } catch {
+    responseDiv.textContent = "Error: roles.js not loaded or malformed.";
+  }
+}
 
-// ---- Populate dropdowns from roles.js (roleData = { Sector: { Function: [roles] } }) ----
-(function initDropdowns(){
-  // Sectors
-  Object.keys(roleData).forEach(sector => {
-    const opt = document.createElement("option");
-    opt.value = sector; opt.textContent = sector;
-    industrySel.appendChild(opt);
-  });
-})();
+function populateFunctions() {
+  functionSelect.innerHTML = '<option value="">Select Function</option>';
+  roleSelect.innerHTML     = '<option value="">Select Role</option>';
+  const sector = sectorSelect.value;
+  if (!sector) return;
 
-industrySel.addEventListener("change", () => {
-  functionSel.innerHTML = '<option value="">Select Function</option>';
-  roleSel.innerHTML     = '<option value="">Select Role</option>';
-  const fns = roleData[industrySel.value];
-  if(!fns) return;
-  Object.keys(fns).forEach(fn => {
-    const opt = document.createElement("option");
-    opt.value = fn; opt.textContent = fn;
-    functionSel.appendChild(opt);
-  });
-});
+  const functions = roleData[sector];
+  if (functions) {
+    Object.keys(functions).forEach(fn => {
+      const opt = document.createElement("option");
+      opt.value = fn;
+      opt.textContent = fn;
+      functionSelect.appendChild(opt);
+    });
+  }
+}
 
-functionSel.addEventListener("change", () => {
-  roleSel.innerHTML = '<option value="">Select Role</option>';
-  const roles = roleData[industrySel.value]?.[functionSel.value] || [];
-  roles.forEach(r => {
-    const opt = document.createElement("option");
-    opt.value = r; opt.textContent = r;
-    roleSel.appendChild(opt);
-  });
-});
+function populateRoles() {
+  roleSelect.innerHTML = '<option value="">Select Role</option>';
+  const sector = sectorSelect.value;
+  const fn     = functionSelect.value;
+  if (!sector || !fn) return;
 
-// ---- Clear (cosmetic for now; doesn’t call API) ----
-clearBtn.addEventListener("click", () => {
-  promptTA.value = "";
-  responseDiv.textContent = "";
-});
+  const roles = roleData[sector]?.[fn];
+  if (Array.isArray(roles)) {
+    roles.forEach(r => {
+      const opt = document.createElement("option");
+      opt.value = r;
+      opt.textContent = r;
+      roleSelect.appendChild(opt);
+    });
+  }
+}
 
-// ---- Submit ----
-submitBtn.addEventListener("click", async () => {
-  const industry = industrySel.value.trim();
-  const func     = functionSel.value.trim();
-  const role     = roleSel.value.trim();
-  const prompt   = promptTA.value.trim();
+// ---------- SUBMIT ----------
+async function submitPrompt() {
+  const sector = sectorSelect.value;
+  const func   = functionSelect.value;
+  const role   = roleSelect.value;
+  const prompt = (promptInput.value || "").trim();
 
-  if(!industry || !role || !prompt){
-    responseDiv.textContent = "Please select industry, function, role, and enter a question.";
+  if (!sector || !func || !role || !prompt) {
+    responseDiv.textContent = "Please select sector, function, role, and enter your question.";
     return;
   }
 
   submitBtn.disabled = true;
   responseDiv.textContent = "Thinking…";
 
-  // Client-side timeout so we never hang forever
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), 12000); // 12s hard cap
-
-  const started = performance.now();
   try {
-    const res = await fetch(API_BASE + ENDPOINT, {
+    const res = await fetch(`${API_BASE}${GENERATE_PATH}`, {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({industry, function: func, role, prompt}),
-      signal: controller.signal,
-      keepalive: true
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sector, func, role, prompt })
     });
 
-    const data = await res.json();
-    const elapsed = Math.round(performance.now() - started);
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`API error (${res.status}): ${txt}`);
+    }
 
-    responseDiv.textContent = (data.text || "No response.")
-      + `\n\n— Responded in ${elapsed} ms`;
+    const data = await res.json();
+    const out  = data.text || data.response || "No response received.";
+    responseDiv.textContent = out;
   } catch (err) {
-    responseDiv.textContent = "Error: " + (err.name === "AbortError" ? "Request timed out." : err.message);
+    responseDiv.textContent = `Error: ${err.message}`;
   } finally {
-    clearTimeout(t);
     submitBtn.disabled = false;
   }
-});
+}
+
+// ---------- CLEAR (cosmetic for now, but it works cleanly) ----------
+function clearUI() {
+  sectorSelect.value = "";
+  functionSelect.innerHTML = '<option value="">Select Function</option>';
+  roleSelect.innerHTML     = '<option value="">Select Role</option>';
+  promptInput.value = "";
+  responseDiv.textContent = "Your response will appear here…";
+}
+
+// ---------- EVENTS ----------
+sectorSelect.addEventListener("change", populateFunctions);
+functionSelect.addEventListener("change", populateRoles);
+submitBtn.addEventListener("click", submitPrompt);
+clearBtn.addEventListener("click", clearUI);
+
+// ---------- INIT ----------
+populateSectors();
