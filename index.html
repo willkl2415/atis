@@ -6,253 +6,166 @@
   <title>ATIS Demo</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --page-yellow:#FFFF00;
-      --control-width: 820px; /* matches the screenshot proportions */
-      --control-radius: 6px;
-      --gold:#deb62f;
-      --border:#cfcfcf;
-      --text:#222;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:var(--page-yellow);
-      font-family:'Roboto',sans-serif;
-      color:var(--text);
-    }
-
-    /* Outer center column */
-    .wrap{
-      width: min(96vw, 980px);
-      margin: 18px auto 64px;
-    }
-
-    /* Intro white card (exactly like the screenshot) */
-    .intro{
-      width: var(--control-width);
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius: 8px;
-      padding: 18px 24px;
-      line-height:1.45;
-      margin: 8px auto 18px;
-      box-shadow: 0 1px 0 rgba(0,0,0,.02);
-    }
-    .intro h2{
-      margin:0 0 10px 0;
-      font-size:16px;
-      font-weight:700;
-    }
-    .intro p{
-      margin:8px 0;
-      font-size:14px;
-    }
-    .intro strong{
-      font-weight:700;
-    }
-
-    /* Labels + controls */
-    .field{
-      width: var(--control-width);
-      margin: 16px auto 0;
-    }
-    .label{
-      font-size:14px;
-      font-weight:700;
-      margin: 0 0 6px 0;
-    }
-    select, textarea{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius: var(--control-radius);
-      padding: 10px 12px;
-      font-size:14px;
-      background:#fff;
-      outline: none;
-    }
-    textarea{
-      min-height: 140px;
-      resize: vertical;
-    }
-
-    /* Submit button (small, left-aligned) */
-    .actions{
-      width: var(--control-width);
-      margin: 14px auto 0;
-    }
-    button{
-      background: var(--gold);
-      border: none;
-      color:#000;
-      border-radius: var(--control-radius);
-      padding: 10px 16px;
-      font-size:14px;
-      cursor:pointer;
-    }
-    button:disabled{opacity:.6;cursor:not-allowed}
-
-    /* Response box – white, same width, looks like your screenshot */
-    .response{
-      width: var(--control-width);
-      margin: 16px auto 0;
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:8px;
-      min-height: 54px;
-      padding: 14px 16px;
-      line-height:1.45;
-      white-space:pre-wrap;
-      font-size:14px;
-    }
-    .muted{opacity:.75;font-style:italic}
-    /* Title line at very top like your page */
-    .title{
-      text-align:left;
-      width: var(--control-width);
-      margin: 10px auto 0;
-      font-weight:700;
-      font-size:16px;
-    }
+    /* ---- EXACT SAME VISUAL LAYOUT YOU APPROVED ---- */
+    body{background:#FFFF00;font-family:'Roboto',sans-serif;margin:0}
+    .wrap{max-width:820px;margin:24px auto;padding:0 16px}
+    .hero{background:#fff3;border-radius:6px;padding:18px 20px;margin-bottom:18px}
+    h1{font-size:32px;margin:0 0 8px;font-weight:700;text-align:left}
+    p{margin:0 0 10px;line-height:1.45}
+    .label{background:#e6c43a;padding:8px 10px;border-radius:4px;margin:22px 0 8px;font-weight:700;width:100%}
+    select,textarea{width:100%;box-sizing:border-box;padding:12px 12px;border:1px solid #ddd;border-radius:6px;font-size:16px;background:#fff}
+    textarea{min-height:140px;resize:vertical}
+    .btn{background:#deb62f;border:none;border-radius:6px;padding:12px 18px;font-size:16px;cursor:pointer;margin:16px 0}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .card{background:#fff;border-radius:8px;padding:18px 20px}
+    .muted{background:#fff6c7;border-radius:8px;padding:14px 16px;margin-top:12px}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="title">Welcome to ATIS — a simple concept with mind-blowing results.</div>
-
-    <div class="intro">
+    <div class="hero">
+      <h1>Welcome to ATIS — a simple concept with mind‑blowing results.</h1>
       <p>You have a question about your work, a task, a decision, or something you’re unsure about — and ATIS responds instantly with clear, helpful guidance. No setup, no jargon, no delay — just the answer you need, exactly when and where you need it.</p>
       <p>Whether you’re travelling, preparing for something important, solving a problem on the spot, or double‑checking a detail in the moment — ATIS is always ready.</p>
       <p>It’s the pinnacle of in‑the‑moment performance support — helping you feel more confident, capable, and informed, wherever you are.</p>
       <p><strong>ATIS isn’t just performance support — it’s the end of waiting for answers.</strong></p>
     </div>
 
-    <div class="field">
-      <div class="label">Sector</div>
-      <select id="sector"><option value="">Select a sector</option></select>
-    </div>
+    <div class="label">Sector</div>
+    <select id="sector"><option value="">Select a sector</option></select>
 
-    <div class="field">
-      <div class="label">Function</div>
-      <select id="function"><option value="">Select a function</option></select>
-    </div>
+    <div class="label">Function</div>
+    <select id="function"><option value="">Select a function</option></select>
 
-    <div class="field">
-      <div class="label">Role</div>
-      <select id="role"><option value="">Select a role</option></select>
-    </div>
+    <div class="label">Role</div>
+    <select id="role"><option value="">Select a role</option></select>
 
-    <div class="field">
-      <div class="label">Prompt</div>
-      <textarea id="prompt" placeholder="Write or copy and paste your question here"></textarea>
-    </div>
+    <div class="label">Prompt</div>
+    <textarea id="prompt" placeholder="Write or copy and paste your question here"></textarea>
 
-    <div class="actions">
-      <button id="submitBtn">Submit Prompt</button>
-    </div>
+    <button id="submitBtn" class="btn">Submit Prompt</button>
 
-    <div id="response" class="response muted"></div>
+    <div id="response" class="card" style="margin-top:12px;">No response received.</div>
+    <div id="hint" class="muted" style="display:none;"></div>
   </div>
 
-  <!-- DATA -->
   <script src="roles.js"></script>
-
-  <!-- BEHAVIOUR (unchanged API behaviour; layout only changed) -->
   <script>
+    // ---- API settings ----
     const API_BASE = "https://atis-api.onrender.com";
     const ENDPOINT = "/generate";
+    const HEALTH = "/health";
 
+    // ---- DOM ----
     const sectorSelect = document.getElementById("sector");
     const functionSelect = document.getElementById("function");
     const roleSelect = document.getElementById("role");
     const promptInput = document.getElementById("prompt");
     const submitBtn = document.getElementById("submitBtn");
     const responseDiv = document.getElementById("response");
+    const hintDiv = document.getElementById("hint");
 
-    function show(text, muted=false){
-      responseDiv.classList.toggle("muted", muted);
-      responseDiv.textContent = text;
-    }
-
-    function populateSectors(){
-      sectorSelect.innerHTML = "<option value=''>Select a sector</option>";
-      (window.ATIS_ROLES || []).forEach(sec=>{
-        const opt=document.createElement("option");
-        opt.value=sec.sector; opt.textContent=sec.sector;
+    // ---- Populate from roles.js ----
+    function populateSectors() {
+      (window.ATIS_ROLES || []).forEach(sec => {
+        const opt = document.createElement("option");
+        opt.value = sec.sector;
+        opt.textContent = sec.sector;
         sectorSelect.appendChild(opt);
       });
     }
-    function populateFunctions(){
+
+    function populateFunctions() {
       functionSelect.innerHTML = "<option value=''>Select a function</option>";
       roleSelect.innerHTML = "<option value=''>Select a role</option>";
-      const sector=(window.ATIS_ROLES||[]).find(s=>s.sector===sectorSelect.value);
-      if(sector){
-        sector.functions.forEach(f=>{
-          const opt=document.createElement("option");
-          opt.value=f.name; opt.textContent=f.name;
+      const sector = (window.ATIS_ROLES || []).find(s => s.sector === sectorSelect.value);
+      if (sector) {
+        sector.functions.forEach(func => {
+          const opt = document.createElement("option");
+          opt.value = func.name;
+          opt.textContent = func.name;
           functionSelect.appendChild(opt);
         });
       }
     }
-    function populateRoles(){
+
+    function populateRoles() {
       roleSelect.innerHTML = "<option value=''>Select a role</option>";
-      const sector=(window.ATIS_ROLES||[]).find(s=>s.sector===sectorSelect.value);
-      if(sector){
-        const func=sector.functions.find(f=>f.name===functionSelect.value);
-        if(func){
-          func.roles.forEach(r=>{
-            const opt=document.createElement("option");
-            opt.value=r; opt.textContent=r;
-            roleSelect.appendChild(opt);
-          });
-        }
-      }
-    }
-
-    async function submitPrompt(){
-      const sector=sectorSelect.value;
-      const func=functionSelect.value;
-      const role=roleSelect.value;
-      const prompt=promptInput.value.trim();
-
-      if(!sector || !func || !role || !prompt){
-        show("Please select sector, function, role, and enter a prompt.");
-        return;
-      }
-
-      submitBtn.disabled=true;
-      show("Thinking...", true);
-
-      try{
-        const res=await fetch(API_BASE+ENDPOINT,{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({sector, func, role, prompt})
+      const sector = (window.ATIS_ROLES || []).find(s => s.sector === sectorSelect.value);
+      if (!sector) return;
+      const func = sector.functions.find(f => f.name === functionSelect.value);
+      if (func) {
+        func.roles.forEach(role => {
+          const opt = document.createElement("option");
+          opt.value = role;
+          opt.textContent = role;
+          roleSelect.appendChild(opt);
         });
-
-        const ct=res.headers.get("content-type")||"";
-        if(!ct.includes("application/json")){
-          const raw=await res.text();
-          show("Non-JSON response from API:\n\n"+raw);
-          return;
-        }
-        const data=await res.json();
-        const text=data.text || data.response || data.message || data.detail;
-        show(text ? String(text) : "Unexpected JSON from API:\n\n"+JSON.stringify(data,null,2));
-      }catch(err){
-        show("Network or CORS error:\n\n"+(err?.message||String(err)));
-      }finally{
-        submitBtn.disabled=false;
       }
     }
 
     sectorSelect.addEventListener("change", populateFunctions);
     functionSelect.addEventListener("change", populateRoles);
+
+    // ---- Warm ping every 25s (keeps Render dyno hot) ----
+    setInterval(() => {
+      fetch(API_BASE + HEALTH, { mode: "cors" }).catch(() => {});
+    }, 25000);
+
+    // ---- Submit with a hard 6s client timeout ----
+    async function submitPrompt() {
+      const sector = sectorSelect.value;
+      const func = functionSelect.value;
+      const role = roleSelect.value;
+      const prompt = promptInput.value.trim();
+
+      if (!sector || !func || !role || !prompt) {
+        responseDiv.textContent = "Please select sector, function, role, and enter a prompt.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      responseDiv.textContent = "Thinking…";
+      hintDiv.style.display = "none";
+
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 6000); // 6s
+
+      try {
+        const res = await fetch(API_BASE + ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sector, func, role, prompt }),
+          signal: ctrl.signal,
+        });
+
+        clearTimeout(to);
+
+        if (!res.ok) {
+          const msg = await res.text().catch(() => "");
+          responseDiv.textContent = `Error: ${res.status} ${msg || res.statusText}`;
+          hintDiv.textContent = "If this keeps happening, try again or shorten the question slightly.";
+          hintDiv.style.display = "block";
+          return;
+        }
+
+        const data = await res.json();
+        responseDiv.textContent = data.text || "No response received.";
+      } catch (err) {
+        responseDiv.textContent = "Request cancelled or timed out at 6s. Please try again.";
+        hintDiv.textContent = "ATIS is tuned for speed. Shorter prompts and stable connection help keep replies snappy.";
+        hintDiv.style.display = "block";
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
     submitBtn.addEventListener("click", submitPrompt);
 
-    // Init
-    show("");
+    // ---- Init ----
     populateSectors();
+    // first warm ping right away
+    fetch(API_BASE + HEALTH, { mode: "cors" }).catch(() => {});
   </script>
 </body>
 </html>

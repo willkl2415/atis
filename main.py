@@ -1,153 +1,148 @@
-import os, time, json, hashlib
-from collections import OrderedDict
-from typing import Any, Dict
-from fastapi import FastAPI, Request
-from fastapi.responses import StreamingResponse
+import os
+import time
+import asyncio
+from typing import Dict, Any, Tuple
+
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 
-# ---------- Config ----------
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY is not set.")
+# -----------------------------
+# FastAPI app
+# -----------------------------
+app = FastAPI(title="ATIS API", version="1.0.0")
 
-PRIMARY_MODEL  = os.getenv("ATIS_MODEL_PRIMARY", "gpt-4o-mini")
-FALLBACK_MODEL = os.getenv("ATIS_MODEL_FALLBACK", "gpt-3.5-turbo")
-MAX_TOKENS     = int(os.getenv("ATIS_MAX_TOKENS", "200"))
-TEMPERATURE    = float(os.getenv("ATIS_TEMPERATURE", "0.6"))
-REQ_TIMEOUT    = float(os.getenv("ATIS_TIMEOUT", "6.0"))  # hard per-call timeout
+# Allow your GitHub Pages site + localhost during dev
+ALLOWED_ORIGINS = [
+    "https://willkl2415.github.io",   # GitHub Pages root
+    "https://willkl2415.github.io/atis",
+    "http://127.0.0.1:8002",
+    "http://localhost:8002",
+]
 
-GHPAGES = "https://willkl2415.github.io"
-
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-# ---------- Tiny TTL LRU cache ----------
-class TTL_LRU:
-    def __init__(self, cap=20, ttl=600):
-        self.cap, self.ttl = cap, ttl
-        self.data: OrderedDict[str, Any] = OrderedDict()
-    def _now(self): return time.time()
-    def get(self, k:str):
-        v = self.data.get(k)
-        if not v: return None
-        val, ts = v
-        if self._now() - ts > self.ttl:
-            self.data.pop(k, None); return None
-        self.data.move_to_end(k); return val
-    def set(self, k:str, val:Any):
-        self.data[k] = (val, self._now()); self.data.move_to_end(k)
-        if len(self.data) > self.cap: self.data.popitem(last=False)
-
-cache = TTL_LRU()
-
-def cache_key(obj: Dict[str, Any]) -> str:
-    return hashlib.sha1(json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
-
-# ---------- FastAPI ----------
-app = FastAPI(title="ATIS API", version="1.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[GHPAGES, "http://127.0.0.1:8002", "http://localhost:8002", "*"],
-    allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-class GenIn(BaseModel):
+# -----------------------------
+# OpenAI client
+# -----------------------------
+if not os.getenv("OPENAI_API_KEY"):
+    raise RuntimeError("OPENAI_API_KEY is not set.")
+
+# We'll set a per-request timeout later via with_options
+client = OpenAI()
+
+# -----------------------------
+# Simple in-memory cache (TTL)
+# -----------------------------
+CACHE: Dict[str, Tuple[float, str]] = {}  # key -> (expires_at_epoch, text)
+CACHE_TTL_SECONDS = 600                   # 10 minutes
+CACHE_MAX_KEYS = 64
+
+def _cache_get(key: str) -> str | None:
+    item = CACHE.get(key)
+    if not item:
+        return None
+    exp, val = item
+    if time.time() > exp:
+        CACHE.pop(key, None)
+        return None
+    return val
+
+def _cache_put(key: str, value: str) -> None:
+    # Basic size control
+    if len(CACHE) >= CACHE_MAX_KEYS:
+        # remove oldest (not perfect LRU, but fine for our needs)
+        oldest_key = next(iter(CACHE))
+        CACHE.pop(oldest_key, None)
+    CACHE[key] = (time.time() + CACHE_TTL_SECONDS, value)
+
+# -----------------------------
+# Schemas
+# -----------------------------
+class GenerateIn(BaseModel):
     sector: str
     func: str
     role: str
     prompt: str
 
-def system_prompt(sector, func, role) -> str:
-    return (
-        "You are ATIS, a real‑time coaching assistant. "
-        "Answer clearly and directly for the user's sector, function, and role. "
-        "Avoid markdown bold. Keep it concise and actionable.\n"
-        f"Sector: {sector}\nFunction: {func}\nRole: {role}\n"
-    )
+class GenerateOut(BaseModel):
+    text: str
 
+# -----------------------------
+# Health + root
+# -----------------------------
 @app.get("/")
 def root():
-    return {"service":"ATIS API","status":"ok","message":"Use POST /generate or /generate_stream."}
+    return {"service": "ATIS API", "status": "ok", "message": "Use POST /generate with { sector, function, role, prompt }."}
 
-@app.get("/ping")
-def ping():
-    return {"pong": True, "ts": time.time()}
+@app.get("/health")
+def health():
+    return {"ok": True, "ts": int(time.time())}
 
-# ---------- Non‑streaming (kept for compatibility) ----------
-@app.post("/generate")
-def generate(body: GenIn):
-    t0 = time.time()
-    payload = {
-        "sector": body.sector.strip(),
-        "func": body.func.strip(),
-        "role": body.role.strip(),
-        "prompt": body.prompt.strip(),
-        "model": PRIMARY_MODEL, "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE,
-    }
-    key = cache_key(payload)
-    c = cache.get(key)
-    if c:
-        return {"text": c, "model": PRIMARY_MODEL, "cached": True, "elapsed_ms": int((time.time()-t0)*1000)}
+# -----------------------------
+# Generate endpoint (fast path)
+# -----------------------------
+SYSTEM_PROMPT = (
+    "You are ATIS, a realtime coaching co‑pilot. "
+    "Give concise, actionable guidance tailored to the user's sector, function, and role. "
+    "Avoid markdown bold/italics; output plain, readable text with short bullets if useful."
+)
 
-    msgs = [
-        {"role":"system","content": system_prompt(body.sector, body.func, body.role)},
-        {"role":"user","content": body.prompt.strip()},
-    ]
+MODEL = "gpt-4o-mini"       # very fast + cheap; good quality
+MAX_OUTPUT_TOKENS = 180     # keep answers snappy
+TEMPERATURE = 0.4
 
-    def call(model):
-        return client.chat.completions.create(
-            model=model, messages=msgs, temperature=TEMPERATURE,
-            max_tokens=MAX_TOKENS, timeout=REQ_TIMEOUT,
+@app.post("/generate", response_model=GenerateOut)
+async def generate(body: GenerateIn):
+    # --- cache key
+    key = f"{body.sector}||{body.func}||{body.role}||{body.prompt.strip()}"
+    cached = _cache_get(key)
+    if cached is not None:
+        return {"text": cached}
+
+    # --- construct compact user prompt
+    user_content = (
+        f"Sector: {body.sector}\n"
+        f"Function: {body.func}\n"
+        f"Role: {body.role}\n\n"
+        f"Question: {body.prompt.strip()}\n\n"
+        "Constraints: plain text only (no **bold**). Keep it crisp."
+    )
+
+    # --- make the OpenAI request with a hard 6s timeout
+    oai = client.with_options(timeout=6.0)  # seconds
+
+    async def _call_openai() -> str:
+        # Using the Responses API (new SDK) for speed and simplicity
+        resp = oai.responses.create(
+            model=MODEL,
+            input=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_content},
+            ],
+            temperature=TEMPERATURE,
+            max_output_tokens=MAX_OUTPUT_TOKENS,
+            # force plain text
+            response_format={"type": "text"},
         )
+        # responses.create returns text in a friendly place:
+        text = resp.output_text or ""
+        return text.strip() or "No response."
 
-    text, used = None, PRIMARY_MODEL
     try:
-        r = call(PRIMARY_MODEL)
-        text = (r.choices[0].message.content or "").strip()
-    except Exception:
-        try:
-            r = call(FALLBACK_MODEL)
-            text = (r.choices[0].message.content or "").strip()
-            used = FALLBACK_MODEL
-        except Exception as e2:
-            return {"text": f"Upstream model timed out. Try again.", "model": None, "cached": False,
-                    "elapsed_ms": int((time.time()-t0)*1000)}
+        text: str = await asyncio.wait_for(_call_openai(), timeout=6.5)
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=504, detail="Upstream timeout after 6s. Please try again.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"OpenAI error: {e}")
 
-    text = text.replace("**","") if text else "No content."
-    cache.set(key, text)
-    return {"text": text, "model": used, "cached": False, "elapsed_ms": int((time.time()-t0)*1000)}
-
-# ---------- Streaming (SSE-like over plain chunked) ----------
-@app.post("/generate_stream")
-def generate_stream(body: GenIn):
-    msgs = [
-        {"role":"system","content": system_prompt(body.sector, body.func, body.role)},
-        {"role":"user","content": body.prompt.strip()},
-    ]
-    def token_gen():
-        try:
-            stream = client.chat.completions.create(
-                model=PRIMARY_MODEL,
-                messages=msgs,
-                temperature=TEMPERATURE,
-                max_tokens=MAX_TOKENS,
-                stream=True,
-                timeout=REQ_TIMEOUT,
-            )
-        except Exception:
-            stream = client.chat.completions.create(
-                model=FALLBACK_MODEL,
-                messages=msgs,
-                temperature=TEMPERATURE,
-                max_tokens=MAX_TOKENS,
-                stream=True,
-                timeout=REQ_TIMEOUT,
-            )
-        yield ""  # flush headers quickly
-        for chunk in stream:
-            delta = chunk.choices[0].delta.content or ""
-            if delta:
-                yield delta
-        # done
-    return StreamingResponse(token_gen(), media_type="text/plain; charset=utf-8")
+    # --- save to cache and return
+    _cache_put(key, text)
+    return {"text": text}
