@@ -1,123 +1,54 @@
-(function () {
-  // === CHANGE THIS to match your Render backend URL ===
-  const API_URL = "https://atis-api.onrender.com/api/ask";
 
-  const sectorEl = document.getElementById('sector');
-  const funcEl = document.getElementById('func');
-  const roleEl = document.getElementById('role');
-  const promptEl = document.getElementById('prompt');
-  const outputEl = document.getElementById('output');
-  const askBtn = document.getElementById('askBtn') || document.querySelector('#askBtn, button#submitPrompt, .actions button');
-  const clearBtn = document.getElementById('clearBtn') || document.querySelector('#clearBtn, button#clearPrompt');
+const sectorSelect = document.getElementById("sector");
+const functionSelect = document.getElementById("function");
+const roleSelect = document.getElementById("role");
+const responseDiv = document.getElementById("response");
 
-  if (!window.ATIS_ROLE_DATA || typeof window.ATIS_ROLE_DATA !== 'object') {
-    console.error('roles.js not loaded or exported as ATIS_ROLE_DATA.');
-    if (outputEl) outputEl.textContent = 'Error: roles.js not loaded or exported as ATIS_ROLE_DATA.';
-    return;
-  }
+Object.keys(roleData).forEach(sector => {
+  const opt = document.createElement("option");
+  opt.value = sector;
+  opt.textContent = sector;
+  sectorSelect.appendChild(opt);
+});
 
-  function clearSelect(el, placeholder) {
-    el.innerHTML = '';
-    const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = placeholder;
-    el.appendChild(opt);
-  }
-
-  function populateSectors() {
-    clearSelect(sectorEl, 'Select Industry Sector');
-    Object.keys(window.ATIS_ROLE_DATA).sort().forEach(sector => {
-      const opt = document.createElement('option');
-      opt.value = sector;
-      opt.textContent = sector;
-      sectorEl.appendChild(opt);
+sectorSelect.addEventListener("change", () => {
+  functionSelect.innerHTML = '<option value="">Select a function</option>';
+  roleSelect.innerHTML = '<option value="">Select a role</option>';
+  const functions = roleData[sectorSelect.value];
+  if (functions) {
+    Object.keys(functions).forEach(func => {
+      const opt = document.createElement("option");
+      opt.value = func;
+      opt.textContent = func;
+      functionSelect.appendChild(opt);
     });
-    funcEl.disabled = true;
-    roleEl.disabled = true;
   }
+});
 
-  function populateFunctions(sector) {
-    clearSelect(funcEl, 'Select Function');
-    clearSelect(roleEl, 'Select Role');
-    const functions = window.ATIS_ROLE_DATA[sector] || {};
-    Object.keys(functions).sort().forEach(fn => {
-      const opt = document.createElement('option');
-      opt.value = fn;
-      opt.textContent = fn;
-      funcEl.appendChild(opt);
-    });
-    funcEl.disabled = false;
-    roleEl.disabled = true;
-  }
-
-  function populateRoles(sector, fn) {
-    clearSelect(roleEl, 'Select Role');
-    (window.ATIS_ROLE_DATA[sector][fn] || []).forEach(role => {
-      const opt = document.createElement('option');
+functionSelect.addEventListener("change", () => {
+  roleSelect.innerHTML = '<option value="">Select a role</option>';
+  const roles = roleData[sectorSelect.value]?.[functionSelect.value];
+  if (roles) {
+    roles.forEach(role => {
+      const opt = document.createElement("option");
       opt.value = role;
       opt.textContent = role;
-      roleEl.appendChild(opt);
+      roleSelect.appendChild(opt);
     });
-    roleEl.disabled = false;
   }
+});
 
-  sectorEl.addEventListener('change', () => {
-    const sector = sectorEl.value;
-    if (sector) {
-      populateFunctions(sector);
-    } else {
-      funcEl.disabled = true;
-      roleEl.disabled = true;
-    }
-  });
-
-  funcEl.addEventListener('change', () => {
-    const sector = sectorEl.value;
-    const fn = funcEl.value;
-    if (fn) {
-      populateRoles(sector, fn);
-    } else {
-      roleEl.disabled = true;
-    }
-  });
-
-  askBtn.addEventListener('click', async () => {
-    const sector = sectorEl.value;
-    const fn = funcEl.value;
-    const role = roleEl.value;
-    const prompt = promptEl.value.trim();
-
-    if (!sector || !fn || !role || !prompt) {
-      outputEl.textContent = 'Please select Sector, Function, Role, and enter a prompt.';
-      return;
-    }
-
-    outputEl.textContent = 'Thinking...';
-
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sector, func: fn, role, prompt })
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      const answer = (data.answer || '').replace(/\*\*/g, '').trim();
-      outputEl.textContent = answer || 'Nothing found. Please rephrase or rewrite your prompt.';
-    } catch (err) {
-      console.error(err);
-      outputEl.textContent = 'Error retrieving response. Please try again.';
-    }
-  });
-
-  clearBtn.addEventListener('click', () => {
-    promptEl.value = '';
-    outputEl.textContent = 'Response will appear here.';
-  });
-
-  populateSectors();
-})();
+function submitPrompt() {
+  const sector = sectorSelect.value;
+  const func = functionSelect.value;
+  const role = roleSelect.value;
+  const prompt = document.getElementById("prompt").value;
+  if (!sector || !func || !role || !prompt) return;
+  responseDiv.innerHTML = `
+    <strong>Sector:</strong> ${sector}<br>
+    <strong>Function:</strong> ${func}<br>
+    <strong>Role:</strong> ${role}<br>
+    <strong>Prompt:</strong> ${prompt}<br><br>
+    <em>(This is a static GitHub Pages demo — AI responses not enabled.)</em>
+  `;
+}
