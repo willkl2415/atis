@@ -1,15 +1,18 @@
 (function () {
+  // === CHANGE THIS to match your Render backend URL ===
+  const API_URL = "https://atis-api.onrender.com/api/ask";
+
   const sectorEl = document.getElementById('sector');
   const funcEl = document.getElementById('func');
   const roleEl = document.getElementById('role');
   const promptEl = document.getElementById('prompt');
   const outputEl = document.getElementById('output');
-  const askBtn = document.getElementById('askBtn');
-  const clearBtn = document.getElementById('clearBtn');
+  const askBtn = document.getElementById('askBtn') || document.querySelector('#askBtn, button#submitPrompt, .actions button');
+  const clearBtn = document.getElementById('clearBtn') || document.querySelector('#clearBtn, button#clearPrompt');
 
   if (!window.ATIS_ROLE_DATA || typeof window.ATIS_ROLE_DATA !== 'object') {
     console.error('roles.js not loaded or exported as ATIS_ROLE_DATA.');
-    outputEl.textContent = 'Error: roles.js not loaded or exported as ATIS_ROLE_DATA.';
+    if (outputEl) outputEl.textContent = 'Error: roles.js not loaded or exported as ATIS_ROLE_DATA.';
     return;
   }
 
@@ -92,13 +95,15 @@
     outputEl.textContent = 'Thinking...';
 
     try {
-      const res = await fetch('/api/ask', {
+      const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sector, func: fn, role, prompt })
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      }
 
       const data = await res.json();
       const answer = (data.answer || '').replace(/\*\*/g, '').trim();
