@@ -1,187 +1,148 @@
-(() => {
-  const industrySel = document.getElementById("industry");
-  const functionSel = document.getElementById("function");
-  const roleSel     = document.getElementById("role");
-  const promptEl    = document.getElementById("prompt");
-  const respEl      = document.getElementById("response");
-  const submitBtn   = document.getElementById("submitBtn");
-  const clearBtn    = document.getElementById("clearBtn");
+// script.js — ATIS Optimisation front-end logic
+// Assumes roles.js exposes global window.ROLES
 
-  // ====== CONFIG: point this at your FastAPI deployment when not local ======
-  const API_URL = (window.ATIS_API_URL || "").trim(); // optional global override
-  const FALLBACK_API = "http://localhost:8002/generate"; // local dev
-  // ==========================================================================
+(function () {
+  const sectorEl = document.getElementById('sector');
+  const funcEl = document.getElementById('func');
+  const roleEl = document.getElementById('role');
+  const promptEl = document.getElementById('prompt');
+  const askBtn = document.getElementById('askBtn');
+  const outputEl = document.getElementById('output');
+  const metaEl = document.getElementById('meta');
+  const statusEl = document.getElementById('status');
 
-  // Robustly obtain the roles data from roles.js
-  const RAW = (window.ATIS_ROLE_DATA || window.roleData || window.ROLES || null);
-
-  // Utility: show message
-  const msg = (text, isError = false) => {
-    respEl.textContent = text || "";
-    respEl.style.borderColor = isError ? "#e74c3c" : "#e6d884";
-  };
-
-  // Normalize sector label (remove leading "Industry Sector 1 — " or "Sector 3 - ")
-  const cleanSector = s => (s || "")
-    .replace(/^Industry\s+Sector\s+\d+\s*[—-]\s*/i, "")
-    .replace(/^Sector\s+\d+\s*[—-]\s*/i, "")
-    .trim();
-
-  // Normalize "Function: X" -> "X"
-  const cleanFunction = f => (f || "").replace(/^Function:\s*/i, "").trim();
-
-  // Convert arbitrary shapes to: { [sector]: { [function]: string[] } }
-  function normalize(data) {
-    if (!data) return null;
-
-    const out = {};
-
-    // Case A: already in the desired object shape
-    const looksLikeDirect = obj =>
-      obj && !Array.isArray(obj) &&
-      Object.values(obj).some(v => v && typeof v === "object" && !Array.isArray(v));
-
-    // Case B: wrapped as { sectors: {...} }
-    if (!Array.isArray(data) && data.sectors && looksLikeDirect(data.sectors)) {
-      data = data.sectors;
-    }
-
-    if (Array.isArray(data)) {
-      // [{ sector, functions: { fn: [roles] } }, ...]
-      for (const item of data) {
-        if (!item) continue;
-        const sectorName = cleanSector(item.sector || item.name || "");
-        const fns = item.functions || {};
-        if (!sectorName || typeof fns !== "object") continue;
-        out[sectorName] = out[sectorName] || {};
-        for (const [fnRaw, list] of Object.entries(fns)) {
-          const fn = cleanFunction(fnRaw);
-          out[sectorName][fn] = Array.isArray(list) ? list.slice() :
-                                (Array.isArray(list?.roles) ? list.roles.slice() : []);
-        }
-      }
-      return Object.keys(out).length ? out : null;
-    }
-
-    if (looksLikeDirect(data)) {
-      // { "Industry Sector 1 — L&D": { "Function: Leadership": [..] } }
-      for (const [sectKey, fnsVal] of Object.entries(data)) {
-        const sectorName = cleanSector(sectKey || (fnsVal?.name) || "");
-        if (!sectorName) continue;
-        const fnObj = (fnsVal && fnsVal.functions && typeof fnsVal.functions === "object")
-          ? fnsVal.functions : fnsVal;
-
-        if (typeof fnObj !== "object" || Array.isArray(fnObj)) continue;
-        out[sectorName] = out[sectorName] || {};
-        for (const [fnRaw, list] of Object.entries(fnObj)) {
-          const fn = cleanFunction(fnRaw);
-          out[sectorName][fn] = Array.isArray(list) ? list.slice() :
-                                (Array.isArray(list?.roles) ? list.roles.slice() : []);
-        }
-      }
-      return Object.keys(out).length ? out : null;
-    }
-
-    return null;
+  if (!window.ROLES || typeof window.ROLES !== 'object') {
+    console.error('ROLES not found. Ensure roles.js is loaded before script.js');
   }
 
-  const DATA = normalize(RAW);
-
-  if (!DATA) {
-    msg("Error: roles.js not loaded or exported in a usable shape. Expected window.ATIS_ROLE_DATA or window.roleData with { Sector → { Function → [roles] } }.", true);
-    console.error("roles.js RAW value:", RAW);
-    return;
+  function clearSelect(el, placeholderText) {
+    el.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = placeholderText;
+    el.appendChild(opt);
   }
 
-  // Populate Industry (sector) select
-  function populateIndustries() {
-    clearSelect(functionSel, "Select Function");
-    clearSelect(roleSel, "Select Role");
-    clearSelect(industrySel, "Select Industry Sector");
-
-    const sectors = Object.keys(DATA).sort((a,b)=>a.localeCompare(b));
-    for (const s of sectors) {
-      industrySel.appendChild(new Option(s, s));
-    }
-  }
-
-  function clearSelect(sel, placeholder) {
-    sel.innerHTML = "";
-    sel.appendChild(new Option(placeholder, ""));
+  function populateSectors() {
+    clearSelect(sectorEl, 'Select sector');
+    Object.keys(window.ROLES).sort().forEach(sector => {
+      const opt = document.createElement('option');
+      opt.value = sector;
+      opt.textContent = sector;
+      sectorEl.appendChild(opt);
+    });
+    funcEl.disabled = true;
+    roleEl.disabled = true;
+    clearSelect(funcEl, 'Select function');
+    clearSelect(roleEl, 'Select role');
   }
 
   function populateFunctions(sector) {
-    clearSelect(functionSel, "Select Function");
-    clearSelect(roleSel, "Select Role");
-    if (!sector || !DATA[sector]) return;
-    const functions = Object.keys(DATA[sector]).sort((a,b)=>a.localeCompare(b));
-    for (const fn of functions) {
-      functionSel.appendChild(new Option(fn, fn));
-    }
+    clearSelect(funcEl, 'Select function');
+    clearSelect(roleEl, 'Select role');
+    roleEl.disabled = true;
+
+    const functions = window.ROLES[sector] || {};
+    Object.keys(functions).sort().forEach(fn => {
+      const opt = document.createElement('option');
+      opt.value = fn;
+      opt.textContent = fn;
+      funcEl.appendChild(opt);
+    });
+    funcEl.disabled = false;
   }
 
   function populateRoles(sector, fn) {
-    clearSelect(roleSel, "Select Role");
-    const roles = DATA[sector]?.[fn] || [];
-    for (const r of roles) {
-      roleSel.appendChild(new Option(r, r));
-    }
+    clearSelect(roleEl, 'Select role');
+    const arr = (window.ROLES[sector] && window.ROLES[sector][fn]) || [];
+    arr.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r;
+      opt.textContent = r;
+      roleEl.appendChild(opt);
+    });
+    roleEl.disabled = false;
   }
 
-  // Event wiring
-  industrySel.addEventListener("change", e => {
-    populateFunctions(e.target.value);
-    msg(""); // clear any previous error
+  sectorEl.addEventListener('change', () => {
+    const sector = sectorEl.value;
+    metaEl.textContent = '';
+    if (!sector) {
+      funcEl.disabled = true;
+      roleEl.disabled = true;
+      clearSelect(funcEl, 'Select function');
+      clearSelect(roleEl, 'Select role');
+      return;
+    }
+    populateFunctions(sector);
   });
 
-  functionSel.addEventListener("change", () => {
-    populateRoles(industrySel.value, functionSel.value);
-    msg("");
+  funcEl.addEventListener('change', () => {
+    const sector = sectorEl.value;
+    const fn = funcEl.value;
+    metaEl.textContent = '';
+    if (!fn) {
+      roleEl.disabled = true;
+      clearSelect(roleEl, 'Select role');
+      return;
+    }
+    populateRoles(sector, fn);
   });
 
-  clearBtn.addEventListener("click", () => {
-    industrySel.value = "";
-    clearSelect(functionSel, "Select Function");
-    clearSelect(roleSel, "Select Role");
-    promptEl.value = "";
-    msg("");
+  roleEl.addEventListener('change', () => {
+    const sector = sectorEl.value;
+    const fn = funcEl.value;
+    const role = roleEl.value;
+    if (sector && fn && role) {
+      metaEl.textContent = `Context: ${sector} → ${fn} → ${role}`;
+    } else {
+      metaEl.textContent = '';
+    }
   });
 
-  submitBtn.addEventListener("click", async () => {
-    const sector = industrySel.value;
-    const func   = functionSel.value;
-    const role   = roleSel.value;
-    const prompt = promptEl.value.trim();
+  async function ask() {
+    const sector = sectorEl.value;
+    const fn = funcEl.value;
+    const role = roleEl.value;
+    const prompt = (promptEl.value || '').trim();
 
-    if (!sector || !func || !role || !prompt) {
-      msg("Please select sector, function, role, and enter a question.", true);
+    if (!sector || !fn || !role) {
+      outputEl.textContent = 'Please select Sector, Function, and Role.';
+      return;
+    }
+    if (!prompt) {
+      outputEl.textContent = 'Please enter a prompt.';
       return;
     }
 
-    submitBtn.disabled = true;
-    msg("Thinking…");
+    statusEl.textContent = 'Thinking…';
+    outputEl.textContent = '';
 
     try {
-      const url = API_URL || FALLBACK_API;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sector, func, role, prompt
-        })
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sector, func: fn, role, prompt })
       });
 
-      if (!res.ok) throw new Error(`API ${res.status}`);
-      const json = await res.json();
-      msg(json.response || "(No content returned)");
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`HTTP ${res.status}: ${t}`);
+      }
+      const data = await res.json();
+      // Ensure clean plain text, remove markdown bold markers
+      const cleaned = (data.answer || '')
+        .replace(/\*\*/g, '')
+        .trim();
+      outputEl.textContent = cleaned || 'Nothing found. Please rephrase or rewrite your prompt.';
     } catch (err) {
       console.error(err);
-      msg(`Error calling API: ${err.message}`, true);
+      outputEl.textContent = 'Error retrieving response. Please try again.';
     } finally {
-      submitBtn.disabled = false;
+      statusEl.textContent = '';
     }
-  });
+  }
 
-  // init
-  populateIndustries();
+  askBtn.addEventListener('click', ask);
+  populateSectors();
 })();
