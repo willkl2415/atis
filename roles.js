@@ -846,7 +846,7 @@
   };
 
   // Expose global
-  global.ROLES = data;
+  global.ATIS_ROLE_DATA = data;
 
   // Optional: also support ES module default export if loaded as a module
   try {
@@ -857,6 +857,3 @@
   } catch (_) {}
 
 })(typeof window !== "undefined" ? window : globalThis);
-
-// ES module export (harmless if loaded via <script> without type=module)
-export default (typeof window !== "undefined" ? window.ROLES : globalThis.ROLES);

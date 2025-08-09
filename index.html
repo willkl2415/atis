@@ -2,156 +2,148 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>ATIS Optimisation</title>
+  <title>ATIS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {
-      --bg: #fff3c4;
-      --panel: #ffffff;
-      --text: #111;
-      --muted: #444;
-      --accent: #111;
-      --border: #e6d796;
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Roboto, Arial, sans-serif;
+      background-color: #ffec99;
+      color: #222;
     }
-    html, body {
-      margin: 0; padding: 0;
-      font-family: Roboto, Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    .wrap {
-      max-width: 1024px;
-      margin: 24px auto;
-      padding: 0 16px;
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
     }
     .header {
-      margin-bottom: 16px;
-    }
-    .title {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 0 0 4px 0;
-    }
-    .subtitle {
-      font-size: 14px;
-      color: var(--muted);
-      margin: 0 0 16px 0;
-    }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: #ffe066;
+      padding: 20px;
+      text-align: center;
       border-radius: 12px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-      padding: 16px;
-      margin-bottom: 16px;
+      margin-bottom: 30px;
     }
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
+    .header h1 {
+      margin: 0;
+      font-size: 36px;
+      font-weight: 700;
+    }
+    .header p {
+      margin: 8px 0 0 0;
+      font-size: 16px;
+      color: #444;
+    }
+    .main-panel {
+      display: flex;
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      gap: 30px;
+    }
+    .left-panel {
+      flex: 1;
+    }
+    .left-panel h2 {
+      font-size: 28px;
+      margin-top: 0;
+    }
+    .left-panel p {
+      font-size: 16px;
+      color: #333;
+    }
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
     label {
-      display: block;
-      font-size: 12px;
-      margin-bottom: 6px;
-      color: var(--muted);
-    }
-    select, textarea, input[type="text"], button {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
       font-size: 14px;
-      background: #fff;
-      color: var(--text);
-      outline: none;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
     textarea {
-      min-height: 120px;
       resize: vertical;
+      min-height: 100px;
     }
     button {
+      background: #ff922b;
+      color: white;
+      font-weight: 600;
+      border: none;
       cursor: pointer;
-      background: #111;
-      color: #fff;
-      border: 1px solid #111;
-      transition: transform 0.02s ease;
     }
-    button:active {
-      transform: translateY(1px);
+    button:hover {
+      background: #f76707;
     }
     .actions {
       display: flex;
-      gap: 12px;
-      align-items: center;
-      justify-content: flex-end;
-      margin-top: 8px;
+      gap: 10px;
     }
-    .output {
-      min-height: 160px;
+    .response-box {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      min-height: 120px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       white-space: pre-wrap;
-      line-height: 1.5;
-    }
-    .meta-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
-    }
-    .muted {
-      color: var(--muted);
-      font-size: 12px;
     }
     @media (max-width: 900px) {
-      .row { grid-template-columns: 1fr; }
-      .meta-row { grid-template-columns: 1fr; }
+      .main-panel {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="container">
     <div class="header">
-      <h1 class="title">ATIS Optimisation</h1>
-      <p class="subtitle">Instant GPT response with Industry → Function → Role context.</p>
+      <h1>ATIS</h1>
+      <p>Ask better. Decide faster. Perform now.</p>
     </div>
 
-    <div class="card">
-      <div class="row">
+    <div class="main-panel">
+      <div class="left-panel">
+        <h2>ATIS</h2>
+        <p>AI Human Performance Support Anytime, Anywhere.</p>
+      </div>
+      <div class="right-panel">
         <div>
-          <label for="sector">Industry Sector</label>
+          <label for="sector">Select Industry Sector</label>
           <select id="sector"></select>
         </div>
         <div>
-          <label for="func">Function</label>
+          <label for="func">Select Function</label>
           <select id="func" disabled></select>
         </div>
         <div>
-          <label for="role">Role</label>
+          <label for="role">Select Role</label>
           <select id="role" disabled></select>
         </div>
-      </div>
-
-      <label for="prompt">Prompt</label>
-      <textarea id="prompt" placeholder="Type your question or request here."></textarea>
-
-      <div class="actions">
-        <button id="askBtn">Ask</button>
-      </div>
-
-      <div class="meta-row">
-        <div class="muted" id="meta"></div>
-        <div class="muted" id="status" style="text-align:right;"></div>
+        <div>
+          <label for="prompt">Your Question</label>
+          <textarea id="prompt" placeholder="What would you like ATIS to assist you with?"></textarea>
+        </div>
+        <div class="actions">
+          <button id="askBtn">Submit Prompt</button>
+          <button type="button" id="clearBtn" style="background:#ffa94d;">Clear</button>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <label>Response</label>
-      <div id="output" class="output"></div>
-    </div>
+    <div class="response-box" id="output">Response will appear here.</div>
   </div>
 
-  <!-- roles.js must load before script.js -->
   <script src="roles.js"></script>
   <script src="script.js"></script>
 </body>
